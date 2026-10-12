@@ -1,0 +1,496 @@
+import { useEffect, useRef, useState } from "react";
+import boundary from "./data/tan-lap-boundary.json";
+
+const photos = {
+  hero: `${import.meta.env.BASE_URL}hero-tan-lap.jpg`,
+  town: "https://images.unsplash.com/photo-1504457047772-27faf1c00561?auto=format&fit=crop&w=900&q=82",
+  temple: "https://images.unsplash.com/photo-1618165220283-e85246c4171c?auto=format&fit=crop&w=900&q=82",
+  pagoda: "https://images.unsplash.com/photo-1503539680555-732099a55a56?auto=format&fit=crop&w=900&q=82",
+  arch: "https://images.unsplash.com/photo-1572551887368-450aa6d8346e?auto=format&fit=crop&w=900&q=82",
+  culture: "https://images.unsplash.com/photo-1532904852347-f4e5e1d80751?auto=format&fit=crop&w=900&q=82",
+  street: "https://images.unsplash.com/photo-1504699439244-a7e34870c35d?auto=format&fit=crop&w=900&q=82",
+  public: "https://images.unsplash.com/photo-1696147861399-93bdb59749dd?auto=format&fit=crop&w=900&q=82",
+  heritage: "https://images.unsplash.com/photo-1713685714770-384c5654f6be?auto=format&fit=crop&w=900&q=82",
+  park: "https://images.unsplash.com/photo-1601264405801-246728ebdf10?auto=format&fit=crop&w=900&q=82",
+  lake: "https://images.unsplash.com/photo-1728012046416-a04bcd94b832?auto=format&fit=crop&w=900&q=82",
+};
+
+type IconName =
+  | "search" | "user" | "menu" | "close" | "arrow" | "pin" | "map" | "file"
+  | "heart" | "building" | "camera" | "home" | "users" | "school" | "health"
+  | "area" | "park" | "phone" | "chat" | "bot" | "guide" | "calendar"
+  | "shield" | "layers" | "megaphone" | "chevron";
+
+function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
+  const paths: Record<IconName, React.ReactNode> = {
+    search: <><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></>,
+    user: <><circle cx="12" cy="8" r="4" /><path d="M4.5 21a7.5 7.5 0 0 1 15 0" /></>,
+    menu: <><path d="M4 7h16M4 12h16M4 17h16" /></>,
+    close: <><path d="m6 6 12 12M18 6 6 18" /></>,
+    arrow: <><path d="M5 12h14M14 7l5 5-5 5" /></>,
+    pin: <><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="2.5" /></>,
+    map: <><path d="m3 6 5-3 8 3 5-3v15l-5 3-8-3-5 3V6Z" /><path d="M8 3v15M16 6v15" /></>,
+    file: <><path d="M6 3h8l4 4v14H6V3Z" /><path d="M14 3v5h5M9 13h6M9 17h6" /></>,
+    heart: <><path d="M20.8 5.8a5.5 5.5 0 0 0-7.8 0L12 6.9l-1.1-1.1a5.5 5.5 0 0 0-7.7 7.8L12 22l8.8-8.4a5.5 5.5 0 0 0 0-7.8Z" /></>,
+    building: <><path d="M4 21V9l8-5 8 5v12M8 21v-7h8v7M9 10h.01M15 10h.01" /></>,
+    camera: <><path d="M4 7h4l2-3h4l2 3h4v13H4V7Z" /><circle cx="12" cy="13" r="4" /></>,
+    home: <><path d="m3 11 9-8 9 8v10h-6v-6H9v6H3V11Z" /></>,
+    users: <><circle cx="9" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path d="M3 20a6 6 0 0 1 12 0M14 15a5 5 0 0 1 7 5" /></>,
+    school: <><path d="m3 9 9-5 9 5-9 5-9-5Z" /><path d="M7 12v5c3 2 7 2 10 0v-5M21 9v7" /></>,
+    health: <><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6V3Z" /></>,
+    area: <><path d="M4 4h6M4 4v6M20 4h-6M20 4v6M4 20h6M4 20v-6M20 20h-6M20 20v-6" /></>,
+    park: <><path d="M12 3 7 10h3l-5 7h6v4h2v-4h6l-5-7h3l-5-7Z" /></>,
+    phone: <><path d="M7 3H4v4c0 7.2 5.8 13 13 13h4v-3l-5-2-2 2c-3-1-6-4-7-7l2-2-2-5Z" /></>,
+    chat: <><path d="M4 4h16v13H9l-5 4V4Z" /><path d="M8 9h8M8 13h5" /></>,
+    bot: <><rect x="4" y="6" width="16" height="13" rx="3" /><path d="M12 2v4M8 11h.01M16 11h.01M8 15h8" /></>,
+    guide: <><path d="M4 5c4-2 6 0 8 2v14c-2-2-4-4-8-2V5ZM20 5c-4-2-6 0-8 2v14c2-2 4-4 8-2V5Z" /></>,
+    calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M8 3v4M16 3v4M3 10h18" /></>,
+    shield: <><path d="M12 3 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></>,
+    layers: <><path d="m12 3 9 5-9 5-9-5 9-5Z" /><path d="m3 12 9 5 9-5M3 16l9 5 9-5" /></>,
+    megaphone: <><path d="M4 10v4h4l9 4V6L8 10H4ZM8 14l2 6h3" /><path d="M20 9v6" /></>,
+    chevron: <><path d="m9 18 6-6-6-6" /></>,
+  };
+  return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
+}
+
+function Logo({ light = false }: { light?: boolean }) {
+  return (
+    <div className={`logo ${light ? "logo--light" : ""}`}>
+      <div className="logo__mark"><span></span><span></span><span></span></div>
+      <div><strong>TÂN LẬP</strong><small>CỔNG THÔNG TIN SỐ</small></div>
+    </div>
+  );
+}
+
+function SectionHeading({ eyebrow, title, action }: { eyebrow: string; title: string; action?: string }) {
+  return (
+    <div className="section-heading">
+      <div>
+        <span className="eyebrow">{eyebrow}</span>
+        <h2>{title}</h2>
+      </div>
+      {action && <a className="view-all" href="#tin-tuc">{action}<Icon name="arrow" size={18} /></a>}
+    </div>
+  );
+}
+
+// Cấu hình thanh thông tin: đổi tên địa danh, toạ độ (để lấy thời tiết) và link quản trị tại đây
+const SITE = {
+  place: "Xã Tân Lập, tỉnh Tây Ninh",
+  lat: 11.6778,
+  lon: 106.04,
+  adminUrl: "#",
+};
+
+function weatherLabel(code: number): [string, string] {
+  if (code === 0) return ["☀️", "Trời quang"];
+  if (code <= 2) return ["🌤️", "Ít mây"];
+  if (code === 3) return ["☁️", "Nhiều mây"];
+  if (code <= 48) return ["🌫️", "Sương mù"];
+  if (code <= 57) return ["🌦️", "Mưa phùn"];
+  if (code <= 67) return ["🌧️", "Có mưa"];
+  if (code <= 82) return ["🌧️", "Mưa rào"];
+  return ["⛈️", "Có dông"];
+}
+
+function TopBar() {
+  const [now, setNow] = useState(() => new Date());
+  const [weather, setWeather] = useState<{ temp: number; code: number } | null>(null);
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    const load = () =>
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${SITE.lat}&longitude=${SITE.lon}&current=temperature_2m,weather_code&timezone=Asia%2FHo_Chi_Minh`)
+        .then((r) => r.json())
+        .then((d) => { if (alive && d.current) setWeather({ temp: Math.round(d.current.temperature_2m), code: d.current.weather_code }); })
+        .catch(() => {});
+    load();
+    const id = setInterval(load, 15 * 60 * 1000);
+    return () => { alive = false; clearInterval(id); };
+  }, []);
+
+  const tz = "Asia/Ho_Chi_Minh";
+  const time = new Intl.DateTimeFormat("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz }).format(now);
+  const weekday = new Intl.DateTimeFormat("vi-VN", { weekday: "long", timeZone: tz }).format(now);
+  const date = new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: tz }).format(now);
+  const [wIcon, wText] = weather ? weatherLabel(weather.code) : ["🌤️", "Đang tải thời tiết"];
+
+  return (
+    <div className="topbar-wrap">
+      <div className="topbar">
+        <div className="topbar__time"><strong>{time}</strong><span>Giờ địa phương</span></div>
+        <i className="topbar__sep" />
+        <span className="topbar__date">{weekday.charAt(0).toUpperCase() + weekday.slice(1)}, {date}</span>
+        <i className="topbar__sep topbar__sep--date" />
+        <span>{wIcon} {weather ? `${weather.temp}°C · ${wText}` : wText}</span>
+        <i className="topbar__sep topbar__sep--place" />
+        <span className="topbar__place">📍 {SITE.place}</span>
+        <a className="topbar__admin" href={SITE.adminUrl}>Truy cập trang quản trị →</a>
+      </div>
+    </div>
+  );
+}
+
+/* ===================== Bản đồ số: ranh giới thật xã Tân Lập =====================
+   Ranh giới lấy từ OpenStreetMap (relation 15801674), lưu ở src/data/tan-lap-boundary.json.
+   Thư viện bản đồ Leaflet 1.9.4 được đặt sẵn trong public/vendor/leaflet (không phụ thuộc CDN). */
+const LEAFLET_VER = "1.9.4";
+let leafletPromise: Promise<any> | null = null;
+function loadLeaflet(): Promise<any> {
+  const w = window as any;
+  if (w.L) return Promise.resolve(w.L);
+  if (leafletPromise) return leafletPromise;
+  leafletPromise = new Promise((resolve, reject) => {
+    const css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = `${import.meta.env.BASE_URL}vendor/leaflet/leaflet.css?v=${LEAFLET_VER}`;
+    document.head.appendChild(css);
+    const js = document.createElement("script");
+    js.src = `${import.meta.env.BASE_URL}vendor/leaflet/leaflet.js?v=${LEAFLET_VER}`;
+    js.onload = () => resolve(w.L);
+    js.onerror = reject;
+    document.head.appendChild(js);
+  });
+  return leafletPromise;
+}
+
+const MAP_LAYERS = {
+  map: { url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", attr: "Bản đồ &copy; Esri; ranh giới &copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a>" },
+  satellite: { url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", attr: "Ảnh vệ tinh &copy; Esri; ranh giới &copy; OpenStreetMap" },
+};
+
+function DigitalMap() {
+  const boxRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<any>(null);
+  const tileRef = useRef<any>(null);
+  const [layer, setLayer] = useState<"map" | "satellite">("map");
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadLeaflet().then((L) => {
+      if (cancelled || !boxRef.current || mapRef.current) return;
+      const map = L.map(boxRef.current, { zoomControl: false, scrollWheelZoom: false, attributionControl: true });
+      map.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>');
+      mapRef.current = map;
+      L.control.zoom({ position: "topright", zoomInTitle: "Phóng to", zoomOutTitle: "Thu nhỏ" }).addTo(map);
+      tileRef.current = L.tileLayer(MAP_LAYERS.map.url, { attribution: MAP_LAYERS.map.attr, maxZoom: 19 }).addTo(map);
+      const ring = (boundary as any).geometry.coordinates[0].map(([x, y]: number[]) => [y, x]);
+      const area = L.polygon(ring, { color: "#1747b5", weight: 3, fillColor: "#3b82f6", fillOpacity: 0.16 }).addTo(map);
+      area.bindTooltip("Xã Tân Lập", { permanent: true, direction: "center", className: "map-name-label" });
+      area.bindPopup("<strong>Xã Tân Lập, tỉnh Tây Ninh</strong><br/>Diện tích: 257,61 km²<br/>Dân số (2025): 16.810 người<br/>Trụ sở UBND: Tổ 14, ấp Tân Hòa");
+      const fit = () => { map.invalidateSize(); map.fitBounds(area.getBounds(), { padding: [18, 18] }); };
+      fit();
+      setTimeout(fit, 200);
+      // Khung bản đồ đổi kích thước (xoay màn hình, toàn màn hình...) thì canh lại
+      const ro = new ResizeObserver(() => fit());
+      ro.observe(boxRef.current);
+      (map as any)._ro = ro;
+    }).catch(() => setFailed(true));
+    return () => { cancelled = true; if (mapRef.current) { mapRef.current._ro?.disconnect(); mapRef.current.remove(); mapRef.current = null; } };
+  }, []);
+
+  useEffect(() => {
+    const L = (window as any).L;
+    if (!L || !mapRef.current || !tileRef.current) return;
+    mapRef.current.removeLayer(tileRef.current);
+    const cfg = MAP_LAYERS[layer];
+    tileRef.current = L.tileLayer(cfg.url, { attribution: cfg.attr, maxZoom: 19 }).addTo(mapRef.current);
+    tileRef.current.bringToBack();
+  }, [layer]);
+
+  const toggleFull = () => {
+    const el = cardRef.current;
+    if (!el) return;
+    if (document.fullscreenElement) document.exitFullscreen(); else el.requestFullscreen?.();
+    setTimeout(() => mapRef.current?.invalidateSize(), 300);
+  };
+
+  return (
+    <div className="map-card" ref={cardRef}>
+      <div className="map-card__head">
+        <div><span>BẢN ĐỒ SỐ</span><strong>Xã Tân Lập</strong></div>
+        <div className="map-card__tools">
+          <div className="map-switch" role="group" aria-label="Chọn lớp bản đồ">
+            <button className={layer === "map" ? "active" : ""} onClick={() => setLayer("map")}>Bản đồ</button>
+            <button className={layer === "satellite" ? "active" : ""} onClick={() => setLayer("satellite")}>Vệ tinh</button>
+          </div>
+          <button className="map-full" aria-label="Xem toàn màn hình" onClick={toggleFull}><Icon name="area" size={19} /></button>
+        </div>
+      </div>
+      <div className="map-canvas">
+        <div ref={boxRef} className="map-leaflet" />
+        {failed && <div className="map-error">Không tải được bản đồ. Vui lòng kiểm tra kết nối mạng.</div>}
+        <div className="map-legend"><strong>Chú giải</strong><span><i className="legend-line"></i>Ranh giới xã</span><span>Diện tích 257,61 km²</span></div>
+      </div>
+      <div className="map-card__footer"><span><Icon name="layers" size={16} /> Dữ liệu ranh giới: OpenStreetMap</span><a href="https://www.openstreetmap.org/relation/15801674" target="_blank" rel="noopener noreferrer">Xem bản đồ đầy đủ <Icon name="arrow" size={17} /></a></div>
+    </div>
+  );
+}
+
+function Hero() {
+  return (
+    <section className="hero">
+      <div className="container hero__inner">
+        <div className="hero__content">
+          <span className="welcome">Chào mừng bạn đến với</span>
+          <h1>TÂN LẬP <em>SỐ</em></h1>
+          <p>Cổng thông tin số gần gũi, minh bạch và tiện ích — kết nối chính quyền với người dân, đồng hành xây dựng Tân Lập văn minh, hiện đại.</p>
+          <div className="hero-search">
+            <Icon name="search" size={21} />
+            <input aria-label="Tìm kiếm thông tin" placeholder="Tìm thủ tục, địa điểm, tin tức..." />
+            <button>Tìm kiếm</button>
+          </div>
+          <div className="hero-shortcuts">
+            {[["file","Dịch vụ công"],["map","Bản đồ số"],["megaphone","Phản ánh"],["phone","Liên hệ"]].map(([icon, label]) => (
+              <a href="#" key={label}><span><Icon name={icon as IconName} size={21} /></span>{label}</a>
+            ))}
+          </div>
+        </div>
+        <div className="hero__map"><DigitalMap /></div>
+      </div>
+    </section>
+  );
+}
+
+// Số liệu tổng quan xã Tân Lập (Tây Ninh) — nguồn: tinhthanhvn.com, dân số năm 2025; mục "Đang cập nhật" chưa có số liệu
+const stats: [IconName, string, string][] = [
+  ["users","Dân số (2025)","16.810 người"], ["area","Diện tích","257,61 km²"], ["layers","Mật độ dân số","65 người/km²"],
+  ["building","Hợp nhất từ","2 xã"], ["shield","Mã ĐVHC","25489"], ["file","Mã bưu chính","80409"],
+  ["home","Hộ dân","Đang cập nhật"], ["school","Trường học","Đang cập nhật"], ["health","Cơ sở y tế","Đang cập nhật"],
+];
+
+function Stats() {
+  return (
+    <section className="stats-section">
+      <div className="container">
+        <SectionHeading eyebrow="TỔNG QUAN" title="Tân Lập qua những con số" />
+        <div className="stats-grid">
+          {stats.map(([icon,label,value], i) => <div className={`stat-card ${value === "Đang cập nhật" ? "stat-card--pending" : ""}`} key={label}><span className={`stat-icon stat-icon--${i%4}`}><Icon name={icon} /></span><strong>{value}</strong><small>{label}</small></div>)}
+        </div>
+        <p className="stats-note">Xã Tân Lập được thành lập từ ngày 01/07/2025 trên cơ sở hợp nhất xã Tân Lập (huyện Tân Biên cũ) và xã Thạnh Bắc theo Nghị quyết số 202/2025/QH15. Trụ sở UBND: Tổ 14, ấp Tân Hòa. Nguồn số liệu: tinhthanhvn.com.</p>
+      </div>
+    </section>
+  );
+}
+
+const utilities: [string, IconName, string][] = [
+  ["Giới thiệu","building","Lịch sử, bộ máy, địa giới"], ["Khu phố số","home","Thông tin từng khu phố"], ["Quy hoạch","map","Bản đồ, quy hoạch sử dụng đất"],
+  ["Du lịch","camera","Điểm đến, văn hóa, ẩm thực"], ["An sinh","heart","Chính sách, hỗ trợ người dân"], ["Dịch vụ công","file","Thủ tục hành chính trực tuyến"], ["Phản ánh","megaphone","Gửi phản ánh, kiến nghị"],
+];
+
+function Utilities() {
+  return (
+    <section className="section utilities" id="dịch-vụ-công">
+      <div className="container">
+        <SectionHeading eyebrow="DÀNH CHO NGƯỜI DÂN" title="Tiện ích nhanh" action="Xem tất cả" />
+        <div className="utility-grid">
+          {utilities.map(([title,icon,desc],i) => <a className={`utility-card utility-card--c${i % 7}`} href="#" key={title}>
+            <span className="utility-card__icon"><Icon name={icon} size={34} /></span>
+            <strong>{title}</strong>
+            <small>{desc}</small>
+            <span className="utility-card__arrow"><Icon name="arrow" size={17} /></span>
+          </a>)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const places = [
+  ["Không gian văn hóa địa phương", "Nét đẹp truyền thống được gìn giữ qua nhiều thế hệ.", photos.temple],
+  ["Nhịp sống Tân Lập", "Khám phá những góc phố bình dị, gần gũi và đầy sức sống.", photos.street],
+  ["Điểm đến cộng đồng", "Không gian xanh dành cho sinh hoạt và kết nối người dân.", photos.park],
+  ["Dấu ấn kiến trúc", "Những công trình tạo nên diện mạo riêng của địa phương.", photos.arch],
+  ["Trải nghiệm bản địa", "Chạm vào vẻ đẹp con người và cuộc sống Tân Lập.", photos.culture],
+];
+
+function Explore() {
+  return (
+    <section className="section explore" id="du-lịch">
+      <div className="container">
+        <SectionHeading eyebrow="ĐI ĐÂU · XEM GÌ" title="Khám phá Tân Lập" action="Tất cả điểm đến" />
+        <div className="places-grid">
+          {places.map(([title,desc,image],i) => <article className="place-card" key={title}>
+            <div className="place-card__image"><img src={image} alt="" /><span>0{i+1}</span></div>
+            <div className="place-card__body"><h3>{title}</h3><p>{desc}</p><a href="#">Khám phá <Icon name="arrow" size={17} /></a></div>
+          </article>)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const smallNews = [
+  ["Thông tin chỉ đạo, điều hành và các hoạt động nổi bật tại địa phương", "Ngày đăng đang cập nhật", photos.public],
+  ["Tuyên truyền xây dựng khu phố văn minh, xanh và thân thiện", "Ngày đăng đang cập nhật", photos.park],
+  ["Hướng dẫn người dân sử dụng dịch vụ công trực tuyến", "Ngày đăng đang cập nhật", photos.town],
+  ["Các hoạt động chăm lo an sinh cho người dân trên địa bàn", "Ngày đăng đang cập nhật", photos.culture],
+];
+
+function News() {
+  return (
+    <section className="section news" id="tin-tức">
+      <div className="container">
+        <SectionHeading eyebrow="CẬP NHẬT MỖI NGÀY" title="Tin tức – Thông báo" action="Xem tất cả tin" />
+        <div className="news-layout">
+          <article className="featured-news">
+            <div className="featured-news__image"><img src={photos.heritage} alt="" /><span>TIN NỔI BẬT</span></div>
+            <div className="featured-news__body"><div className="date"><Icon name="calendar" size={16} /> Ngày đăng đang cập nhật</div><h3>Chung tay xây dựng Tân Lập ngày càng văn minh, hiện đại và đáng sống</h3><p>Cập nhật hoạt động nổi bật, những chuyển biến tích cực và câu chuyện đẹp từ cộng đồng địa phương.</p><a href="#">Đọc bài viết <Icon name="arrow" size={18} /></a></div>
+          </article>
+          <div className="news-list">
+            {smallNews.map(([title,date,image],i) => <article className="news-item" key={i}><img src={image} alt="" /><div><span><Icon name="calendar" size={14} /> {date}</span><h3>{title}</h3><a href="#">Xem chi tiết <Icon name="chevron" size={14} /></a></div></article>)}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Footer() {
+  return (
+    <>
+      <section className="support-strip">
+        <div className="container support-grid">
+          {[["chat","Zalo Tân Lập","Kết nối nhanh"],["bot","Trợ lý AI","Hỏi đáp 24/7"],["guide","Hướng dẫn","Dễ dàng sử dụng"],["phone","Liên hệ","Luôn lắng nghe"]].map(([icon,title,desc]) => <a href={title === "Trợ lý AI" ? "#tro-ly-ai" : "#"} key={title}><span><Icon name={icon as IconName} /></span><div><strong>{title}</strong><small>{desc}</small></div><Icon name="chevron" size={18} /></a>)}
+        </div>
+      </section>
+      <footer className="footer">
+        <div className="container footer__top">
+          <div className="footer__brand"><Logo light /><p>Cổng thông tin số phục vụ người dân, đồng hành cùng sự phát triển của địa phương.</p><div className="footer__badge"><Icon name="shield" size={18} /> Thông tin chính thống</div></div>
+          <div><h4>Khám phá</h4><a href="#">Giới thiệu</a><a href="#">Khu phố số</a><a href="#">Bản đồ quy hoạch</a><a href="#">Du lịch Tân Lập</a></div>
+          <div><h4>Hỗ trợ người dân</h4><a href="#">Dịch vụ công</a><a href="#">Phản ánh kiến nghị</a><a href="#">Câu hỏi thường gặp</a><a href="#">Chính sách bảo mật</a></div>
+          <div className="footer__contact"><h4>Thông tin liên hệ</h4><p><Icon name="pin" size={19} /> Tổ 14, ấp Tân Hòa, xã Tân Lập, tỉnh Tây Ninh</p><p><Icon name="phone" size={19} /> Thông tin đang cập nhật</p><p><Icon name="calendar" size={19} /> Thứ Hai – Thứ Sáu</p></div>
+        </div>
+        <div className="container footer__bottom"><span>© Cổng thông tin Tân Lập Số.</span><span>Vì người dân · Phục vụ người dân</span></div>
+      </footer>
+    </>
+  );
+}
+
+
+/* ===================== Trợ lý AI (chatbot góc màn hình) =====================
+   Hiện đang trả lời theo bộ câu hỏi mẫu (FAQ) ngay trên trình duyệt.
+   Khi có API AI thật, chỉ cần sửa hàm askAssistant() bên dưới để gọi API. */
+type ChatMsg = { from: "bot" | "user"; text: string };
+
+const QUICK_QUESTIONS = ["Thủ tục hành chính", "Gửi phản ánh", "Giờ làm việc", "Thông tin liên hệ"];
+
+const FAQ: { keys: string[]; answer: string }[] = [
+  { keys: ["thủ tục", "dịch vụ công", "hồ sơ", "giấy tờ", "chứng thực", "khai sinh", "hộ tịch"], answer: "Anh/chị có thể nộp hồ sơ trực tuyến tại mục **Dịch vụ công** trên trang này, hoặc đến Bộ phận Một cửa của xã trong giờ hành chính. Anh/chị cần làm thủ tục gì để tôi hướng dẫn cụ thể hơn?" },
+  { keys: ["phản ánh", "kiến nghị", "khiếu nại", "sự cố", "góp ý"], answer: "Anh/chị bấm vào **Phản ánh** ở phần Tiện ích nhanh, mô tả sự việc và đính kèm hình ảnh (nếu có). Phản ánh sẽ được chuyển đến bộ phận phụ trách và phản hồi qua số điện thoại anh/chị cung cấp." },
+  { keys: ["giờ", "làm việc", "mở cửa", "thời gian"], answer: "Bộ phận Một cửa làm việc từ **Thứ Hai đến Thứ Sáu**. Giờ làm việc cụ thể đang được cập nhật, anh/chị vui lòng xem thêm tại mục Liên hệ." },
+  { keys: ["liên hệ", "số điện thoại", "hotline", "địa chỉ", "email"], answer: "Thông tin liên hệ của UBND xã nằm ở cuối trang (mục **Thông tin liên hệ**). Anh/chị cũng có thể kết nối nhanh qua **Zalo Tân Lập**." },
+  { keys: ["bản đồ", "quy hoạch", "đất", "khu phố"], answer: "Anh/chị xem **Bản đồ số** ngay ở đầu trang hoặc mục **Quy hoạch** trong Tiện ích nhanh để tra cứu thông tin khu phố và quy hoạch." },
+  { keys: ["xin chào", "chào", "hello", "hi"], answer: "Xin chào anh/chị! Tôi là Trợ lý AI của Tân Lập Số. Tôi có thể hỗ trợ về thủ tục hành chính, phản ánh kiến nghị, thông tin liên hệ và tiện ích của xã." },
+];
+
+async function askAssistant(question: string): Promise<string> {
+  const q = question.toLowerCase();
+  const hit = FAQ.find((f) => f.keys.some((k) => q.includes(k)));
+  await new Promise((r) => setTimeout(r, 700));
+  return hit ? hit.answer : "Cảm ơn anh/chị đã đặt câu hỏi. Hiện tôi chưa có thông tin cho nội dung này, anh/chị vui lòng liên hệ trực tiếp Bộ phận Một cửa hoặc gửi **Phản ánh** để được cán bộ hỗ trợ.";
+}
+
+function renderBold(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith("**") ? <strong key={i}>{part.slice(2, -2)}</strong> : <span key={i}>{part}</span>
+  );
+}
+
+function BotFace({ size = 56 }: { size?: number }) {
+  return (
+    <svg className="bot-face" width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+      <line x1="32" y1="6" x2="32" y2="14" stroke="#1747b5" strokeWidth="3" strokeLinecap="round" />
+      <circle className="bot-face__antenna" cx="32" cy="6" r="4" fill="#ff9a1f" />
+      <rect x="8" y="14" width="48" height="40" rx="16" fill="#fff" stroke="#1747b5" strokeWidth="3" />
+      <rect x="14" y="22" width="36" height="22" rx="11" fill="#1747b5" />
+      <g className="bot-face__eyes" fill="#7ef0ff"><ellipse cx="24" cy="32" rx="4" ry="5" /><ellipse cx="40" cy="32" rx="4" ry="5" /></g>
+      <path d="M26 39 Q32 43 38 39" stroke="#7ef0ff" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+      <rect x="2" y="28" width="6" height="12" rx="3" fill="#ff9a1f" /><rect x="56" y="28" width="6" height="12" rx="3" fill="#ff9a1f" />
+    </svg>
+  );
+}
+
+function ChatBot() {
+  const [open, setOpen] = useState(false);
+  const [hint, setHint] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<ChatMsg[]>([
+    { from: "bot", text: "Xin chào! Tôi là **Trợ lý AI Tân Lập Số**. Anh/chị cần hỗ trợ gì hôm nay?" },
+  ]);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Lời chào bật lên định kỳ khi khung chat đang đóng
+  useEffect(() => {
+    if (open) { setHint(false); return; }
+    const show = setTimeout(() => setHint(true), 2500);
+    const cycle = setInterval(() => setHint((h) => !h), 7000);
+    return () => { clearTimeout(show); clearInterval(cycle); };
+  }, [open]);
+
+  // Mở chatbot khi bấm link "#tro-ly-ai" (ví dụ ô Trợ lý AI ở cuối trang)
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement).closest('a[href="#tro-ly-ai"]');
+      if (a) { e.preventDefault(); setOpen(true); }
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, []);
+
+  useEffect(() => { listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" }); }, [messages, typing, open]);
+
+  const send = async (text: string) => {
+    const q = text.trim();
+    if (!q || typing) return;
+    setMessages((m) => [...m, { from: "user", text: q }]);
+    setInput("");
+    setTyping(true);
+    const answer = await askAssistant(q);
+    setTyping(false);
+    setMessages((m) => [...m, { from: "bot", text: answer }]);
+  };
+
+  return (
+    <div className={`chatbot ${open ? "chatbot--open" : ""}`}>
+      {open && (
+        <div className="chatbot__panel" role="dialog" aria-label="Trợ lý AI Tân Lập Số">
+          <div className="chatbot__head">
+            <span className="chatbot__avatar"><BotFace size={34} /></span>
+            <div><strong>Trợ lý AI Tân Lập</strong><small><i />Đang trực tuyến</small></div>
+            <button aria-label="Đóng trợ lý" onClick={() => setOpen(false)}><Icon name="close" size={20} /></button>
+          </div>
+          <div className="chatbot__list" ref={listRef}>
+            {messages.map((m, i) => <div key={i} className={`chatbot__msg chatbot__msg--${m.from}`}>{renderBold(m.text)}</div>)}
+            {typing && <div className="chatbot__msg chatbot__msg--bot chatbot__typing"><span /><span /><span /></div>}
+          </div>
+          <div className="chatbot__quick">
+            {QUICK_QUESTIONS.map((q) => <button key={q} onClick={() => send(q)}>{q}</button>)}
+          </div>
+          <form className="chatbot__input" onSubmit={(e) => { e.preventDefault(); send(input); }}>
+            <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Nhập câu hỏi của anh/chị..." aria-label="Nhập câu hỏi" />
+            <button type="submit" aria-label="Gửi" disabled={!input.trim() || typing}><Icon name="arrow" size={20} /></button>
+          </form>
+          <p className="chatbot__note">Trợ lý AI có thể chưa chính xác, vui lòng kiểm tra lại với cán bộ xã.</p>
+        </div>
+      )}
+      {!open && hint && <button className="chatbot__hint" onClick={() => setOpen(true)}>Xin chào! 👋 Tôi có thể giúp gì cho anh/chị?</button>}
+      <button className="chatbot__fab" aria-label={open ? "Đóng trợ lý AI" : "Mở trợ lý AI"} onClick={() => setOpen(!open)}>
+        <span className="chatbot__pulse" />
+        {open ? <Icon name="close" size={28} /> : <BotFace />}
+      </button>
+    </div>
+  );
+}
+
+export default function App() {
+  return <><div className="page-bg" aria-hidden="true" style={{ backgroundImage: `url(${photos.hero})` }} /><TopBar /><main><Hero /><Stats /><Utilities /><Explore /><News /></main><Footer /><ChatBot /></>;
+}

@@ -1,0 +1,160 @@
+import { useEffect, useRef, useState } from "react";
+import boundary from "../data/tan-lap-boundary.json";
+import { Icon } from "./core";
+
+/* ===================== Bản đồ số: ranh giới thật xã Tân Lập =====================
+   Ranh giới lấy từ OpenStreetMap (relation 15801674), lưu ở src/data/tan-lap-boundary.json.
+   Thư viện bản đồ Leaflet 1.9.4 đặt sẵn trong public/vendor/leaflet (không phụ thuộc CDN). */
+const LEAFLET_VER = "1.9.4";
+let leafletPromise: Promise<any> | null = null;
+export function loadLeaflet(): Promise<any> {
+  const w = window as any;
+  if (w.L) return Promise.resolve(w.L);
+  if (leafletPromise) return leafletPromise;
+  leafletPromise = new Promise((resolve, reject) => {
+    const css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = `${import.meta.env.BASE_URL}vendor/leaflet/leaflet.css?v=${LEAFLET_VER}`;
+    document.head.appendChild(css);
+    const js = document.createElement("script");
+    js.src = `${import.meta.env.BASE_URL}vendor/leaflet/leaflet.js?v=${LEAFLET_VER}`;
+    js.onload = () => resolve(w.L);
+    js.onerror = reject;
+    document.head.appendChild(js);
+  });
+  return leafletPromise;
+}
+
+export const MAP_LAYERS = {
+  map: { url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", attr: "Bản đồ &copy; Esri; ranh giới &copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a>" },
+  satellite: { url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", attr: "Ảnh vệ tinh &copy; Esri; ranh giới &copy; OpenStreetMap" },
+};
+
+export const BOUNDARY_RING: [number, number][] = (boundary as any).geometry.coordinates[0].map(([x, y]: number[]) => [y, x]);
+export const CENTER: [number, number] = [11.6778, 106.04];
+
+/** Điểm (lat, lng) có nằm trong ranh giới xã không (thuật toán ray casting). */
+export function insideCommune(lat: number, lng: number) {
+  let inside = false;
+  const r = BOUNDARY_RING;
+  for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+    const [yi, xi] = r[i], [yj, xj] = r[j];
+    if ((yi > lat) !== (yj > lat) && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+type Props = {
+  className?: string;
+  layer?: "map" | "satellite";
+  marker?: [number, number] | null;
+  pickMode?: boolean;
+  onPick?: (lat: number, lng: number) => void;
+  showLabel?: boolean;
+  popupHtml?: string;
+};
+
+/** Bản đồ Leaflet hiển thị ranh giới xã; tùy chọn chọn vị trí bằng cách bấm lên bản đồ. */
+export function BoundaryMap({ className = "", layer = "map", marker = null, pickMode = false, onPick, showLabel = true, popupHtml }: Props) {
+  const boxRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<any>(null);
+  const tileRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
+  const pickRef = useRef({ pickMode, onPick });
+  pickRef.current = { pickMode, onPick };
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadLeaflet().then((L) => {
+      if (cancelled || !boxRef.current || mapRef.current) return;
+      const map = L.map(boxRef.current, { zoomControl: false, scrollWheelZoom: false });
+      map.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>');
+      mapRef.current = map;
+      L.control.zoom({ position: "topright", zoomInTitle: "Phóng to", zoomOutTitle: "Thu nhỏ" }).addTo(map);
+      tileRef.current = L.tileLayer(MAP_LAYERS[layer].url, { attribution: MAP_LAYERS[layer].attr, maxZoom: 19 }).addTo(map);
+      const area = L.polygon(BOUNDARY_RING, { color: "#1747b5", weight: 3, fillColor: "#3b82f6", fillOpacity: 0.22 }).addTo(map);
+      if (showLabel) area.bindTooltip("Xã Tân Lập", { permanent: true, direction: "center", className: "map-name-label" });
+      if (popupHtml) area.bindPopup(popupHtml);
+      map.on("click", (e: any) => { const p = pickRef.current; if (p.pickMode && p.onPick) p.onPick(e.latlng.lat, e.latlng.lng); });
+      area.on("click", (e: any) => { const p = pickRef.current; if (p.pickMode && p.onPick) { L.DomEvent.stopPropagation(e); p.onPick(e.latlng.lat, e.latlng.lng); } });
+      const fit = () => { map.invalidateSize(); if (!markerRef.current) map.fitBounds(area.getBounds(), { padding: [16, 16] }); };
+      fit();
+      setTimeout(fit, 200);
+      const ro = new ResizeObserver(() => map.invalidateSize());
+      ro.observe(boxRef.current);
+      map._ro = ro;
+      map._area = area;
+    }).catch(() => setFailed(true));
+    return () => { cancelled = true; if (mapRef.current) { mapRef.current._ro?.disconnect(); mapRef.current.remove(); mapRef.current = null; markerRef.current = null; } };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const L = (window as any).L;
+    if (!L || !mapRef.current || !tileRef.current) return;
+    mapRef.current.removeLayer(tileRef.current);
+    tileRef.current = L.tileLayer(MAP_LAYERS[layer].url, { attribution: MAP_LAYERS[layer].attr, maxZoom: 19 }).addTo(mapRef.current);
+    tileRef.current.bringToBack();
+  }, [layer]);
+
+  useEffect(() => {
+    let tries = 0;
+    const apply = () => {
+      const L = (window as any).L;
+      const map = mapRef.current;
+      if (!L || !map) { if (tries++ < 40) setTimeout(apply, 150); return; }
+      if (markerRef.current) { map.removeLayer(markerRef.current); markerRef.current = null; }
+      if (marker) {
+        markerRef.current = L.circleMarker(marker, { radius: 9, color: "#fff", weight: 3, fillColor: "#f26a12", fillOpacity: 1 }).addTo(map);
+        map.setView(marker, Math.max(map.getZoom(), 13));
+      } else if (map._area) {
+        map.fitBounds(map._area.getBounds(), { padding: [16, 16] });
+      }
+    };
+    apply();
+  }, [marker?.[0], marker?.[1]]);
+
+  return (
+    <div className={`boundary-map ${pickMode ? "boundary-map--pick" : ""} ${className}`}>
+      <div ref={boxRef} className="map-leaflet" />
+      {failed && <div className="map-error">Không tải được bản đồ. Vui lòng kiểm tra kết nối mạng.</div>}
+    </div>
+  );
+}
+
+/** Thẻ bản đồ số ở trang chủ. */
+export function DigitalMap() {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [layer, setLayer] = useState<"map" | "satellite">("map");
+  const toggleFull = () => {
+    const el = cardRef.current;
+    if (!el) return;
+    if (document.fullscreenElement) document.exitFullscreen(); else el.requestFullscreen?.();
+  };
+  return (
+    <div className="map-card" ref={cardRef}>
+      <div className="map-card__head">
+        <div><span>BẢN ĐỒ SỐ</span><strong>Xã Tân Lập</strong></div>
+        <div className="map-card__tools">
+          <LayerSwitch layer={layer} setLayer={setLayer} />
+          <button className="map-full" aria-label="Xem toàn màn hình" onClick={toggleFull}><Icon name="area" size={19} /></button>
+        </div>
+      </div>
+      <div className="map-canvas">
+        <BoundaryMap layer={layer} popupHtml="<strong>Xã Tân Lập, tỉnh Tây Ninh</strong><br/>Diện tích: 257,61 km²<br/>Dân số (2025): 16.810 người<br/>Trụ sở UBND: Tổ 14, ấp Tân Hòa" />
+        <div className="map-legend"><strong>Chú giải</strong><span><i className="legend-line"></i>Ranh giới xã</span><span>Diện tích 257,61 km²</span></div>
+      </div>
+      <div className="map-card__footer"><span><Icon name="layers" size={16} /> Dữ liệu ranh giới: OpenStreetMap</span><a href="#/quy-hoach">Xem bản đồ đầy đủ <Icon name="arrow" size={17} /></a></div>
+    </div>
+  );
+}
+
+export function LayerSwitch({ layer, setLayer }: { layer: "map" | "satellite"; setLayer: (l: "map" | "satellite") => void }) {
+  return (
+    <div className="map-switch" role="group" aria-label="Chọn lớp bản đồ">
+      <button className={layer === "map" ? "active" : ""} onClick={() => setLayer("map")}>Bản đồ</button>
+      <button className={layer === "satellite" ? "active" : ""} onClick={() => setLayer("satellite")}>Vệ tinh</button>
+    </div>
+  );
+}

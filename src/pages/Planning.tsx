@@ -1,0 +1,128 @@
+import { useState } from "react";
+import { PageHero, Tabs } from "../components/Layout";
+import { EmptyState, Icon, SITE, to } from "../lib/core";
+import { BoundaryMap, LayerSwitch, PoiExplorer, insideCommune } from "../lib/maps";
+import { NEWS, PLANNING_LINKS, PLANNING_PROJECTS, POIS } from "../data/content";
+
+type Mode = "toado" | "thua" | "diachi";
+type Result = { kind: "point"; lat: number; lng: number; inside: boolean } | { kind: "parcel"; text: string } | { kind: "error"; text: string };
+
+export function PlanningPage({ initialTab = "tra-cuu" }: { initialTab?: string }) {
+  const [tab, setTab] = useState(initialTab);
+  const [mode, setMode] = useState<Mode>("toado");
+  const [layer, setLayer] = useState<"map" | "satellite">("map");
+  const [marker, setMarker] = useState<[number, number] | null>(null);
+  const [result, setResult] = useState<Result | null>(null);
+  const [coord, setCoord] = useState("");
+  const [sheet, setSheet] = useState("");
+  const [parcel, setParcel] = useState("");
+  const [addr, setAddr] = useState("");
+  const [locating, setLocating] = useState(false);
+
+  const showPoint = (lat: number, lng: number) => {
+    setMarker([lat, lng]);
+    setResult({ kind: "point", lat, lng, inside: insideCommune(lat, lng) });
+  };
+  const submit = () => {
+    if (mode === "toado") {
+      const m = coord.replace(/[;\s]+/g, ",").split(",").filter(Boolean).map(Number);
+      if (m.length !== 2 || m.some(isNaN) || Math.abs(m[0]) > 90 || Math.abs(m[1]) > 180) { setResult({ kind: "error", text: "Toạ độ chưa đúng định dạng. Ví dụ: 11.6778, 106.0400 (vĩ độ, kinh độ)." }); return; }
+      showPoint(m[0], m[1]);
+    } else if (mode === "thua") {
+      if (!sheet.trim() || !parcel.trim()) { setResult({ kind: "error", text: "Vui lòng nhập đủ số tờ và số thửa." }); return; }
+      setMarker(null);
+      setResult({ kind: "parcel", text: `Thửa đất số ${parcel.trim()}, tờ bản đồ số ${sheet.trim()}` });
+    } else {
+      if (!addr.trim()) { setResult({ kind: "error", text: "Vui lòng nhập địa chỉ." }); return; }
+      setMarker(null);
+      setResult({ kind: "parcel", text: `Địa chỉ: ${addr.trim()}` });
+    }
+  };
+  const locate = () => {
+    if (!navigator.geolocation) { setResult({ kind: "error", text: "Trình duyệt không hỗ trợ định vị." }); return; }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (p) => { setLocating(false); setMode("toado"); setCoord(`${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`); showPoint(p.coords.latitude, p.coords.longitude); },
+      () => { setLocating(false); setResult({ kind: "error", text: "Không lấy được vị trí. Vui lòng cho phép truy cập vị trí hoặc nhập toạ độ." }); },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
+  const planningNews = NEWS.filter((n) => n.category === "Quy hoạch – xây dựng");
+
+  return (
+    <main className="subpage">
+      <PageHero crumbs={[["Quy hoạch"]]} eyebrow="BẢN ĐỒ SỐ" title="Tra cứu quy hoạch & phát triển" desc="Xem ranh giới xã Tân Lập, kiểm tra một vị trí có thuộc địa bàn xã hay không và truy cập các nguồn tra cứu quy hoạch chính thức." />
+      <div className="container">
+        <Tabs value={tab} onChange={setTab} items={[["tra-cuu", "Tra cứu quy hoạch"], ["dia-diem", "Địa điểm công cộng", POIS.length], ["tin-tuc", "Tin tức quy hoạch", planningNews.length], ["du-an", "Phát triển đô thị", PLANNING_PROJECTS.length]]} />
+        {tab === "tra-cuu" && (
+          <div className="planning">
+            <section className="card planning__form">
+              <h2 className="card__title">Xác định vị trí</h2>
+              <label className="field"><span>Phường / Xã (sau sắp xếp)</span><select disabled><option>Xã Tân Lập, tỉnh Tây Ninh</option></select></label>
+              <div className="seg">
+                {([["toado", "Toạ độ"], ["thua", "Số tờ – thửa"], ["diachi", "Địa chỉ"]] as [Mode, string][]).map(([m, l]) => <button key={m} className={mode === m ? "active" : ""} onClick={() => { setMode(m); setResult(null); }}>{l}</button>)}
+              </div>
+              <form onSubmit={(e) => { e.preventDefault(); submit(); }}>
+                {mode === "toado" && <label className="field"><span>Toạ độ (vĩ độ, kinh độ)</span><input value={coord} onChange={(e) => setCoord(e.target.value)} placeholder="11.6778, 106.0400" /></label>}
+                {mode === "thua" && <div className="field-row"><label className="field"><span>Số tờ</span><input value={sheet} onChange={(e) => setSheet(e.target.value)} inputMode="numeric" placeholder="VD: 24" /></label><label className="field"><span>Số thửa</span><input value={parcel} onChange={(e) => setParcel(e.target.value)} inputMode="numeric" placeholder="VD: 8" /></label></div>}
+                {mode === "diachi" && <label className="field"><span>Địa chỉ</span><input value={addr} onChange={(e) => setAddr(e.target.value)} placeholder="Số nhà, tổ, ấp..." /></label>}
+                <button className="btn btn--primary btn--block" type="submit"><Icon name="search" size={18} /> Tra cứu</button>
+              </form>
+              <div className="btn-row">
+                <button className="btn btn--ghost" onClick={locate} disabled={locating}><Icon name="locate" size={17} /> {locating ? "Đang định vị..." : "Vị trí của tôi"}</button>
+                <button className="btn btn--ghost" onClick={() => { setMarker(null); setResult(null); }}><Icon name="map" size={17} /> Xem toàn xã</button>
+              </div>
+              <p className="muted small">Mẹo: bấm trực tiếp lên bản đồ để chọn một điểm.</p>
+              {result && <ResultBox r={result} />}
+            </section>
+            <section className="card planning__map">
+              <div className="planning__maphead">
+                <strong>XÃ TÂN LẬP · 257,61 KM²</strong>
+                <LayerSwitch layer={layer} setLayer={setLayer} />
+              </div>
+              <div className="big-map"><BoundaryMap layer={layer} marker={marker} pickMode onPick={(lat, lng) => { setMode("toado"); setCoord(`${lat.toFixed(6)}, ${lng.toFixed(6)}`); showPoint(lat, lng); }} /></div>
+              <div className="legend-row"><span><i className="legend-line" /> Ranh giới xã</span><span><i className="legend-dot" /> Vị trí tra cứu</span><span className="muted">Lớp quy hoạch sử dụng đất, thửa đất: đang chờ dữ liệu từ cơ quan chuyên môn</span></div>
+            </section>
+          </div>
+        )}
+        {tab === "dia-diem" && <section className="card"><h2 className="card__title">Bản đồ địa điểm công cộng</h2><PoiExplorer /></section>}
+        {tab === "tin-tuc" && (planningNews.length
+          ? <div className="news-grid">{planningNews.map((n) => <a key={n.slug} className="news-card" href={to(`/tin-tuc/${n.slug}`)}><img src={n.image} alt="" /><div><small>{n.date || "Đang cập nhật"}</small><h3>{n.title}</h3><p>{n.summary}</p></div></a>)}</div>
+          : <EmptyState icon="file" title="Chưa có tin quy hoạch">Thông báo lấy ý kiến quy hoạch, công bố quy hoạch, kế hoạch sử dụng đất của xã sẽ được đăng tại đây.</EmptyState>)}
+        {tab === "du-an" && (PLANNING_PROJECTS.length
+          ? <div className="project-grid">{PLANNING_PROJECTS.map((p) => <article className="card" key={p.name}><small className="tag">{p.type}</small><h3>{p.name}</h3><p>{p.desc}</p><div className="mini-stats"><div><strong>{p.scale}</strong><small>Quy mô</small></div><div><strong>{p.status}</strong><small>Tình trạng</small></div></div></article>)}</div>
+          : <EmptyState icon="building" title="Chưa có dự án được công bố">Danh mục dự án đầu tư, công trình hạ tầng trên địa bàn xã sẽ được cập nhật khi có quyết định phê duyệt.</EmptyState>)}
+        <section className="card link-card">
+          <h2 className="card__title">Nguồn tra cứu quy hoạch chính thức</h2>
+          <ul>{PLANNING_LINKS.map((l) => <li key={l.url}><a href={l.url} target="_blank" rel="noopener noreferrer"><Icon name="external" size={16} /> {l.name}</a></li>)}</ul>
+          <p className="muted small">Thông tin trên bản đồ chỉ có giá trị tham khảo, không thay thế văn bản, hồ sơ quy hoạch được cơ quan có thẩm quyền phê duyệt.</p>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function ResultBox({ r }: { r: Result }) {
+  if (r.kind === "error") return <div className="result result--error"><Icon name="info" size={18} /><span>{r.text}</span></div>;
+  if (r.kind === "point") return (
+    <div className={`result ${r.inside ? "result--ok" : "result--warn"}`}>
+      <Icon name={r.inside ? "check" : "info"} size={18} />
+      <div>
+        <strong>{r.inside ? "Vị trí thuộc địa bàn xã Tân Lập" : "Vị trí nằm ngoài địa bàn xã Tân Lập"}</strong>
+        <small>Toạ độ: {r.lat.toFixed(6)}, {r.lng.toFixed(6)}</small>
+        {r.inside && <small>Thông tin quy hoạch sử dụng đất chi tiết của vị trí này: liên hệ Phòng Kinh tế – UBND xã hoặc Văn phòng đăng ký đất đai.</small>}
+        <a href={`https://www.google.com/maps?q=${r.lat},${r.lng}`} target="_blank" rel="noopener noreferrer">Mở trên Google Maps <Icon name="external" size={14} /></a>
+      </div>
+    </div>
+  );
+  return (
+    <div className="result result--warn">
+      <Icon name="info" size={18} />
+      <div>
+        <strong>{r.text}</strong>
+        <small>Cổng chưa kết nối cơ sở dữ liệu địa chính trực tuyến. Để tra cứu thông tin thửa đất, quy hoạch sử dụng đất, người dân vui lòng liên hệ Trung tâm Phục vụ hành chính công xã ({SITE.address}) hoặc Văn phòng đăng ký đất đai.</small>
+        <a href={to("/dich-vu-cong")}>Xem thủ tục đất đai <Icon name="arrow" size={14} /></a>
+      </div>
+    </div>
+  );
+}

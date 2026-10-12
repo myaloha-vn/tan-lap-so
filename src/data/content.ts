@@ -1,0 +1,532 @@
+/* =====================================================================
+   DỮ LIỆU NỘI DUNG CỔNG THÔNG TIN XÃ TÂN LẬP
+   - Mọi trang con đọc dữ liệu từ file này. Cán bộ cập nhật số liệu, tên,
+     bài viết... tại đây (sau này có thể thay bằng API / CMS).
+   - Trường để trống ("" hoặc null) sẽ tự hiển thị "Đang cập nhật".
+   - Chỉ ghi số liệu đã có nguồn. Nguồn hiện có: tinhthanhvn.com (dân số 2025,
+     diện tích, mã ĐVHC), Nghị quyết 1682/NQ-UBTVQH15 (khoản 71 Điều 1),
+     Báo và PT-TH Tây Ninh (baotayninh.vn, 8–9/2026), Tuổi Trẻ (6–7/2025), TTXVN.
+   ===================================================================== */
+import { photos, type IconName } from "../lib/core";
+
+/* ---------- Tổng quan xã ---------- */
+export const OVERVIEW = {
+  population: "16.810",
+  populationYear: 2025,
+  area: "257,61",
+  density: "65",
+  unitCode: "25489",
+  postalCode: "80409",
+  households: "",
+  hamlets: "9", // số ấp
+  schools: "",
+  clinics: "",
+  /* Chuyển đổi số — theo báo cáo UBND xã tại buổi khảo sát của UBMTTQ tỉnh ngày 26/8/2026 (baotayninh.vn) */
+  digital: { procedures: "428", dossiers: "10.825", onlineRate: "99,07%", digitizedRate: "100%", paymentRate: "100%", satisfaction: "100%", asOf: "08/2026" },
+  /* Chăn nuôi — báo cáo tại hội nghị giám sát của HĐND xã ngày 25/8/2026 */
+  livestock: { farms: "21", activeFarms: "17", birdNests: "44", smallHouseholds: "336", bannedZones: "7" },
+  legalBasis: "Nghị quyết số 1682/NQ-UBTVQH15 ngày 16/6/2025 của Ủy ban Thường vụ Quốc hội (khoản 71 Điều 1)",
+  formedFrom: ["Xã Tân Lập (huyện Tân Biên cũ)", "Xã Thạnh Bắc"],
+  effectiveDate: "01/07/2025",
+  neighbors: ["Phường Tân Ninh", "Phường Bình Minh", "Xã Tân Biên", "Xã Thạnh Bình", "Xã Trà Vong", "Xã Tân Châu"],
+  source: "tinhthanhvn.com (dữ liệu dân số năm 2025, diện tích, mã đơn vị hành chính)",
+};
+
+export const INTRO_ARTICLE: { heading: string; body: string[] }[] = [
+  {
+    heading: "Quá trình hình thành",
+    body: [
+      "Xã Tân Lập, tỉnh Tây Ninh được thành lập trên cơ sở sắp xếp toàn bộ diện tích tự nhiên, quy mô dân số của xã Tân Lập (huyện Tân Biên cũ) và xã Thạnh Bắc, theo Nghị quyết số 1682/NQ-UBTVQH15 của Ủy ban Thường vụ Quốc hội. Chính quyền địa phương xã Tân Lập chính thức hoạt động theo mô hình chính quyền địa phương hai cấp từ ngày 01/07/2025.",
+      "Xã có diện tích tự nhiên khoảng 257,61 km², dân số năm 2025 khoảng 16.810 người, gồm 9 ấp: Bàu Bền, Bàu Rã, Suối Mây, Tân Đông 1, Tân Đông 2, Tân Hòa, Tân Khai, Tân Tiến và Thạnh Hiệp. Trụ sở Đảng ủy – HĐND – UBND xã đặt tại Tổ 14, ấp Tân Hòa.",
+    ],
+  },
+  {
+    heading: "Vị trí địa lý",
+    body: [
+      "Xã Tân Lập nằm ở phía Bắc tỉnh Tây Ninh, giáp các đơn vị: phường Tân Ninh, phường Bình Minh, xã Tân Biên, xã Thạnh Bình, xã Trà Vong và xã Tân Châu.",
+      "Trên địa bàn xã có Khu di tích Căn cứ Trung ương Cục miền Nam — di tích quốc gia đặc biệt, nằm trong khu rừng Rùm Đuôn – Chàng Riệc.",
+    ],
+  },
+  {
+    heading: "Kinh tế",
+    body: [
+      "Kinh tế xã chủ yếu dựa vào nông – lâm nghiệp, với các cây trồng chính như cao su, mía; chăn nuôi phát triển mạnh và chuyển dần từ hộ nhỏ lẻ sang trang trại.",
+      "Theo báo cáo của UBND xã (8/2026), trên địa bàn có 21 trang trại chăn nuôi (17 trang trại đang hoạt động), 44 nhà yến và 336 hộ chăn nuôi nhỏ lẻ. Xã đã công khai 7 khu vực không được phép chăn nuôi theo Nghị quyết số 54/2026/NQ-HĐND của HĐND tỉnh.",
+    ],
+  },
+  {
+    heading: "Định hướng chuyển đổi số",
+    body: [
+      "Đến tháng 8/2026, 428 thủ tục hành chính thuộc thẩm quyền của xã đều được cung cấp trực tuyến; tỷ lệ hồ sơ nộp trực tuyến đạt 99,07%, số hóa hồ sơ và thanh toán trực tuyến đạt 100%. Xã triển khai phong trào “Bình dân học vụ số” và Tổ công nghệ số cộng đồng hỗ trợ người cao tuổi, đồng bào dân tộc thiểu số ở vùng biên.",
+      "Cổng thông tin Tân Lập Số được xây dựng nhằm công khai, minh bạch thông tin; giúp người dân tra cứu thủ tục, gửi phản ánh – kiến nghị, nắm bắt chính sách an sinh và kết nối nhanh với chính quyền xã.",
+      "Nội dung trên cổng đang được UBND xã cập nhật dần. Các số liệu chưa có nguồn chính thức được ghi \"Đang cập nhật\".",
+    ],
+  },
+];
+
+/* ---------- Bộ máy tổ chức ----------
+   Họ tên tổng hợp từ tin bài Báo và PT-TH Tây Ninh (25/8 – 7/9/2026) và Tuổi Trẻ (30/6, 3/7/2025).
+   Chức danh còn trống: điền khi có danh sách chính thức của xã. */
+export const ORG_SOURCE = "Tổng hợp từ tin bài của Báo và Phát thanh, Truyền hình Tây Ninh (tháng 8–9/2026). Chức danh chưa có tên đang được cập nhật.";
+export type Person = { name: string; title: string; phone?: string };
+export type OrgGroup = { group: string; people: Person[] };
+export const ORG: Record<string, { label: string; desc: string; groups: OrgGroup[] }> = {
+  dang: {
+    label: "Đảng ủy",
+    desc: "Ban Thường vụ, Ban Chấp hành Đảng bộ xã và các cơ quan tham mưu, giúp việc.",
+    groups: [
+      { group: "Thường trực Đảng ủy", people: [
+        { name: "Nguyễn Trọng Tấn", title: "Bí thư Đảng ủy, Chủ tịch HĐND xã" },
+        { name: "Trịnh Hoài Phong", title: "Phó Bí thư Thường trực Đảng ủy, Chủ tịch Ủy ban MTTQ Việt Nam xã" },
+        { name: "Nguyễn Thị Nga", title: "Phó Bí thư Đảng ủy, Chủ tịch UBND xã" },
+      ] },
+      { group: "Văn phòng Đảng ủy", people: [{ name: "", title: "Chánh Văn phòng Đảng ủy" }] },
+      { group: "Ủy ban Kiểm tra Đảng ủy", people: [{ name: "", title: "Chủ nhiệm Ủy ban Kiểm tra Đảng ủy" }] },
+      { group: "Ban Xây dựng Đảng", people: [{ name: "Nguyễn Thị Thanh", title: "Ủy viên Ban Thường vụ, Trưởng Ban Xây dựng Đảng" }] },
+    ],
+  },
+  hdnd: {
+    label: "HĐND",
+    desc: "Hội đồng nhân dân xã — cơ quan quyền lực nhà nước ở địa phương.",
+    groups: [
+      { group: "Thường trực HĐND", people: [
+        { name: "Nguyễn Trọng Tấn", title: "Chủ tịch HĐND xã" },
+        { name: "Nguyễn Thị Cúc", title: "Phó Chủ tịch HĐND xã" },
+      ] },
+      { group: "Các Ban của HĐND", people: [
+        { name: "", title: "Trưởng Ban Pháp chế" },
+        { name: "Đặng Tuyết Mai", title: "Trưởng Ban Kinh tế – Ngân sách" },
+        { name: "", title: "Trưởng Ban Văn hóa – Xã hội" },
+      ] },
+    ],
+  },
+  ubnd: {
+    label: "UBND",
+    desc: "Ủy ban nhân dân xã và các phòng, đơn vị chuyên môn.",
+    groups: [
+      { group: "Lãnh đạo UBND", people: [
+        { name: "Nguyễn Thị Nga", title: "Chủ tịch UBND xã" },
+        { name: "Nguyễn Văn Thạnh", title: "Phó Chủ tịch UBND xã" },
+        { name: "", title: "Phó Chủ tịch UBND xã" },
+      ] },
+      { group: "Các phòng, đơn vị chuyên môn", people: [
+        { name: "", title: "Chánh Văn phòng HĐND và UBND" },
+        { name: "", title: "Trưởng phòng Kinh tế" },
+        { name: "", title: "Trưởng phòng Văn hóa – Xã hội" },
+        { name: "", title: "Giám đốc Trung tâm Phục vụ hành chính công" },
+      ] },
+    ],
+  },
+  mttq: {
+    label: "MTTQ & đoàn thể",
+    desc: "Ủy ban Mặt trận Tổ quốc Việt Nam xã và các tổ chức chính trị – xã hội.",
+    groups: [
+      { group: "Ủy ban MTTQ Việt Nam xã", people: [
+        { name: "Trịnh Hoài Phong", title: "Chủ tịch Ủy ban MTTQ Việt Nam xã" },
+        { name: "", title: "Phó Chủ tịch Ủy ban MTTQ Việt Nam xã" },
+      ] },
+      { group: "Các tổ chức chính trị – xã hội", people: [
+        { name: "", title: "Bí thư Đoàn TNCS Hồ Chí Minh xã" },
+        { name: "", title: "Chủ tịch Hội Liên hiệp Phụ nữ xã" },
+        { name: "", title: "Chủ tịch Hội Nông dân xã" },
+        { name: "", title: "Chủ tịch Hội Cựu chiến binh xã" },
+        { name: "Quản Trần Rễ", title: "Chủ tịch Hội Nạn nhân chất độc da cam/dioxin xã (nhiệm kỳ 2026–2031)" },
+      ] },
+    ],
+  },
+};
+
+/* ---------- Ấp số ----------
+   Bổ sung đủ các ấp theo danh sách chính thức của xã. */
+export type Hamlet = {
+  slug: string; name: string; group: string; note?: string;
+  population?: string; households?: string; area?: string;
+  borders?: { bac?: string; nam?: string; dong?: string; tay?: string };
+  head?: Person;
+  notices?: { title: string; date: string }[];
+  activities?: { title: string; date: string; tag: string; slug?: string }[];
+  intro?: string[];
+  places?: { name: string; desc: string }[];
+  sources?: { name: string; url: string }[];
+};
+/* Nguồn danh sách ấp: vi.wikipedia.org (Tân Lập, Tây Ninh), ever.vn.
+   Xã Tân Lập cũ có 5 ấp: Tân Đông 1, Tân Đông 2, Tân Hòa, Tân Tiến, Tân Khai (meeymap.com);
+   4 ấp còn lại thuộc xã Thạnh Bắc cũ (suy ra do xã mới chỉ hợp nhất từ 2 xã) — UBND xã xác nhận lại. */
+const G1 = "Khu vực xã Tân Lập cũ", G2 = "Khu vực xã Thạnh Bắc cũ";
+export const HAMLET_GROUPS: string[] = [G1, G2];
+export const HAMLETS: Hamlet[] = [
+  { slug: "bau-ben", name: "Ấp Bàu Bền", group: G2, head: { name: "", title: "Trưởng ấp" } },
+  { slug: "bau-ra", name: "Ấp Bàu Rã", group: G2, head: { name: "", title: "Trưởng ấp" } },
+  { slug: "suoi-may", name: "Ấp Suối Mây", group: G2, head: { name: "", title: "Trưởng ấp" } },
+  { slug: "tan-dong-1", name: "Ấp Tân Đông 1", group: G1, head: { name: "", title: "Trưởng ấp" } },
+  { slug: "tan-dong-2", name: "Ấp Tân Đông 2", group: G1, head: { name: "", title: "Trưởng ấp" } },
+  {
+    slug: "tan-hoa", name: "Ấp Tân Hòa", group: G1,
+    note: "Nơi đặt trụ sở hành chính xã (Đảng ủy – HĐND – UBND xã).",
+    head: { name: "", title: "Trưởng ấp" },
+    intro: [
+      "Ấp Tân Hòa thuộc khu vực xã Tân Lập cũ (huyện Tân Biên trước đây). Sau sắp xếp đơn vị hành chính từ ngày 01/07/2025, ấp là trung tâm hành chính của xã Tân Lập: trụ sở Đảng ủy – HĐND – UBND xã và Trung tâm Phục vụ hành chính công xã cùng đặt tại Tổ 14, ấp Tân Hòa.",
+      "Là trung tâm hành chính của xã, ấp Tân Hòa là nơi người dân toàn xã đến liên hệ, giải quyết thủ tục hành chính. Trên địa bàn xã có tuyến Quốc lộ 22B đi qua; nhiều doanh nghiệp thu mua, chế biến nông sản, vận tải và cơ khí đăng ký hoạt động tại xã.",
+    ],
+    places: [
+      { name: "Trụ sở Đảng ủy – HĐND – UBND xã Tân Lập", desc: "Tổ 14, ấp Tân Hòa." },
+      { name: "Trung tâm Phục vụ hành chính công xã", desc: "Tổ 14, ấp Tân Hòa · Đường dây nóng: 0276.3742.139 – 0327.208.848." },
+          ],
+    activities: [
+      { title: "Trung tâm Phục vụ hành chính công xã: 99,07% hồ sơ nộp trực tuyến", date: "26/08/2026", tag: "Chuyển đổi số", slug: "khao-sat-chuyen-doi-so-xa-tan-lap-2026" },
+    ],
+    sources: [
+      { name: "Tuổi Trẻ – Địa chỉ Trung tâm hành chính công 96 xã, phường", url: "https://tuoitre.vn/dia-chi-so-dien-thoai-trung-tam-hanh-chinh-cong-96-xa-phuong-tinh-tay-ninh-moi-20250628115140108.htm" },
+      { name: "Danh bạ doanh nghiệp xã Tân Lập (tratencongty.com)", url: "https://www.tratencongty.com/tinh-tay-ninh/huyen-tan-bien/xa-tan-lap/" },
+    ],
+  },
+  { slug: "tan-khai", name: "Ấp Tân Khai", group: G1, head: { name: "", title: "Trưởng ấp" } },
+  { slug: "tan-tien", name: "Ấp Tân Tiến", group: G1, head: { name: "", title: "Trưởng ấp" } },
+  { slug: "thanh-hiep", name: "Ấp Thạnh Hiệp", group: G2, head: { name: "", title: "Trưởng ấp" } },
+];
+
+/* ---------- An sinh xã hội ---------- */
+export type Policy = {
+  slug: string; name: string; group: string; target: string; benefit: string;
+  documents: string[]; where: string; basis: string; status: "Đang áp dụng" | "Tạm dừng";
+};
+export const POLICY_GROUPS = ["Người có công", "Bảo trợ xã hội", "Giảm nghèo", "Y tế – BHYT", "Giáo dục", "Nhà ở", "Việc làm"];
+export const POLICIES: Policy[] = [
+  {
+    slug: "tro-cap-uu-dai-nguoi-co-cong", name: "Trợ cấp, phụ cấp ưu đãi người có công với cách mạng", group: "Người có công",
+    target: "Người có công với cách mạng và thân nhân theo Pháp lệnh Ưu đãi người có công với cách mạng.",
+    benefit: "Trợ cấp, phụ cấp hằng tháng hoặc một lần; bảo hiểm y tế; ưu đãi giáo dục, nhà ở... Mức hưởng theo quy định hiện hành.",
+    documents: ["Tờ khai theo mẫu", "Giấy tờ chứng minh là người có công hoặc thân nhân", "Bản sao giấy tờ tùy thân (đối chiếu VNeID)"],
+    where: "Trung tâm Phục vụ hành chính công xã", basis: "Pháp lệnh Ưu đãi người có công với cách mạng số 02/2020/UBTVQH14 và các văn bản hướng dẫn", status: "Đang áp dụng",
+  },
+  {
+    slug: "tro-cap-xa-hoi-hang-thang", name: "Trợ cấp xã hội hằng tháng", group: "Bảo trợ xã hội",
+    target: "Người cao tuổi, người khuyết tật, trẻ em có hoàn cảnh đặc biệt và các đối tượng bảo trợ xã hội khác.",
+    benefit: "Trợ cấp hằng tháng theo mức chuẩn trợ giúp xã hội nhân hệ số; được cấp thẻ BHYT miễn phí. Mức hưởng theo quy định hiện hành.",
+    documents: ["Tờ khai đề nghị trợ giúp xã hội (theo mẫu)", "Giấy tờ chứng minh thuộc đối tượng (giấy xác nhận khuyết tật...)"],
+    where: "Trung tâm Phục vụ hành chính công xã", basis: "Nghị định 20/2021/NĐ-CP và các văn bản sửa đổi, bổ sung", status: "Đang áp dụng",
+  },
+  {
+    slug: "ho-tro-mai-tang-phi", name: "Hỗ trợ chi phí mai táng", group: "Bảo trợ xã hội",
+    target: "Đối tượng bảo trợ xã hội đang hưởng trợ cấp hằng tháng khi qua đời và các trường hợp theo quy định.",
+    benefit: "Hỗ trợ một lần chi phí mai táng. Mức hỗ trợ theo quy định hiện hành.",
+    documents: ["Tờ khai đề nghị hỗ trợ chi phí mai táng", "Bản sao giấy chứng tử / trích lục khai tử"],
+    where: "Trung tâm Phục vụ hành chính công xã", basis: "Nghị định 20/2021/NĐ-CP", status: "Đang áp dụng",
+  },
+  {
+    slug: "tro-giup-dot-xuat", name: "Trợ giúp xã hội khẩn cấp (đột xuất)", group: "Bảo trợ xã hội",
+    target: "Hộ gia đình, cá nhân gặp khó khăn do thiên tai, hỏa hoạn, sự cố bất ngờ.",
+    benefit: "Hỗ trợ lương thực, chi phí điều trị, nhà ở, mai táng... tùy thiệt hại. Mức hỗ trợ theo quy định hiện hành.",
+    documents: ["Đơn đề nghị hỗ trợ", "Xác nhận thiệt hại của ấp / cơ quan có thẩm quyền"],
+    where: "UBND xã / Trưởng ấp", basis: "Nghị định 20/2021/NĐ-CP", status: "Đang áp dụng",
+  },
+  {
+    slug: "ho-tro-ho-ngheo-can-ngheo", name: "Chính sách hỗ trợ hộ nghèo, hộ cận nghèo", group: "Giảm nghèo",
+    target: "Hộ nghèo, hộ cận nghèo theo chuẩn nghèo đa chiều được UBND xã công nhận.",
+    benefit: "Hỗ trợ BHYT, giáo dục, tín dụng ưu đãi, nhà ở, tiền điện... theo từng chương trình.",
+    documents: ["Giấy đề nghị rà soát hộ nghèo, hộ cận nghèo (theo mẫu)"],
+    where: "Trưởng ấp / UBND xã", basis: "Quy định chuẩn nghèo đa chiều hiện hành và Chương trình mục tiêu quốc gia giảm nghèo bền vững", status: "Đang áp dụng",
+  },
+  {
+    slug: "vay-von-uu-dai", name: "Vay vốn ưu đãi Ngân hàng Chính sách xã hội", group: "Giảm nghèo",
+    target: "Hộ nghèo, cận nghèo, hộ mới thoát nghèo, học sinh – sinh viên, người lao động cần vốn tạo việc làm...",
+    benefit: "Vay vốn với lãi suất ưu đãi thông qua các tổ chức hội đoàn thể nhận ủy thác tại ấp.",
+    documents: ["Giấy đề nghị vay vốn (theo mẫu NHCSXH)", "Xác nhận đối tượng của UBND xã"],
+    where: "Tổ tiết kiệm và vay vốn tại ấp / Điểm giao dịch NHCSXH xã", basis: "Quy định của Ngân hàng Chính sách xã hội", status: "Đang áp dụng",
+  },
+  {
+    slug: "bhyt-doi-tuong-chinh-sach", name: "Cấp thẻ BHYT cho đối tượng chính sách", group: "Y tế – BHYT",
+    target: "Người có công, đối tượng bảo trợ xã hội, hộ nghèo, trẻ em dưới 6 tuổi và các nhóm do ngân sách đóng/hỗ trợ.",
+    benefit: "Được cấp hoặc hỗ trợ mức đóng thẻ BHYT theo quy định.",
+    documents: ["Danh sách đề nghị do UBND xã lập", "Giấy tờ chứng minh đối tượng (nếu cần)"],
+    where: "UBND xã / Bảo hiểm xã hội", basis: "Luật Bảo hiểm y tế và văn bản hướng dẫn", status: "Đang áp dụng",
+  },
+  {
+    slug: "mien-giam-hoc-phi", name: "Miễn, giảm học phí và hỗ trợ chi phí học tập", group: "Giáo dục",
+    target: "Học sinh thuộc hộ nghèo, cận nghèo, con người có công, trẻ em mồ côi, khuyết tật...",
+    benefit: "Miễn hoặc giảm học phí, hỗ trợ chi phí học tập theo quy định.",
+    documents: ["Đơn đề nghị miễn, giảm học phí (theo mẫu)", "Giấy tờ chứng minh đối tượng"],
+    where: "Nhà trường nơi học sinh theo học", basis: "Quy định hiện hành về học phí và chính sách miễn, giảm học phí", status: "Đang áp dụng",
+  },
+  {
+    slug: "ho-tro-nha-o", name: "Hỗ trợ nhà ở cho hộ nghèo, gia đình chính sách", group: "Nhà ở",
+    target: "Hộ nghèo, hộ cận nghèo, người có công có nhà ở hư hỏng, dột nát.",
+    benefit: "Hỗ trợ xây mới hoặc sửa chữa nhà ở theo chương trình được phê duyệt.",
+    documents: ["Đơn đề nghị hỗ trợ nhà ở", "Xác nhận hiện trạng nhà ở của ấp / UBND xã"],
+    where: "UBND xã", basis: "Các chương trình hỗ trợ nhà ở hiện hành", status: "Đang áp dụng",
+  },
+  {
+    slug: "ho-tro-viec-lam", name: "Tư vấn, giới thiệu việc làm và học nghề", group: "Việc làm",
+    target: "Người lao động trong độ tuổi, ưu tiên lao động nông thôn, người khuyết tật, bộ đội xuất ngũ.",
+    benefit: "Tư vấn, giới thiệu việc làm miễn phí; hỗ trợ đào tạo nghề trình độ sơ cấp theo chương trình.",
+    documents: ["Phiếu đăng ký tư vấn, giới thiệu việc làm"],
+    where: "UBND xã / Trung tâm Dịch vụ việc làm tỉnh", basis: "Luật Việc làm và văn bản hướng dẫn", status: "Đang áp dụng",
+  },
+];
+export const PROGRAMS: { name: string; start: string; end: string; how: string; desc: string }[] = [];
+export const WELFARE_HOTLINE = ""; // đường dây nóng an sinh (nếu có)
+
+/* ---------- Văn hóa – Du lịch ---------- */
+export type Destination = {
+  slug: string; name: string; category: string; image: string; address: string;
+  summary: string; body: string[]; highlights?: string[]; mapQuery: string; verified: boolean;
+};
+export const DEST_CATEGORIES = ["Di tích lịch sử", "Thiên nhiên – sinh thái", "Văn hóa – tín ngưỡng", "Ẩm thực – đặc sản"];
+export const DESTINATIONS: Destination[] = [
+  {
+    slug: "can-cu-trung-uong-cuc-mien-nam", name: "Khu di tích Căn cứ Trung ương Cục miền Nam", category: "Di tích lịch sử",
+    image: photos.forest, address: "Rừng Rùm Đuôn – Chàng Riệc, xã Tân Lập, tỉnh Tây Ninh",
+    summary: "Di tích quốc gia đặc biệt — “thủ đô kháng chiến” giữa rừng Rùm Đuôn – Chàng Riệc.",
+    body: [
+      "Khu di tích Căn cứ Trung ương Cục miền Nam nằm sâu trong rừng Rùm Đuôn – Chàng Riệc, thuộc địa bàn xã Tân Lập, cách trung tâm Tây Ninh khoảng 60 km về phía Bắc và cách biên giới Việt Nam – Campuchia khoảng 4 km.",
+      "Đây từng là nơi làm việc của cơ quan lãnh đạo cách mạng miền Nam trong kháng chiến chống Mỹ. Khu di tích được công nhận là di tích lịch sử cấp quốc gia ngày 31/8/1990 và được Thủ tướng Chính phủ xếp hạng di tích quốc gia đặc biệt vào tháng 5/2012.",
+      "Ngày 15/01/2026, Thủ tướng Chính phủ ban hành Quyết định số 88/QĐ-TTg phê duyệt nhiệm vụ lập quy hoạch khu di tích, với phạm vi khoảng 241,25 ha (khu nghiên cứu khoảng 291,25 ha), gồm 3 cụm: Căn cứ Trung ương Cục miền Nam, Căn cứ Mặt trận Dân tộc Giải phóng miền Nam và Căn cứ Chính phủ Cách mạng lâm thời Cộng hòa miền Nam Việt Nam.",
+      "Năm 2025, khu di tích đã hoàn thành, nâng cấp một số hạng mục; nhà trưng bày được trang bị thiết bị số và trình chiếu phim tư liệu bằng công nghệ 3D mapping. Từ năm 2026, tỉnh đầu tư khoảng 20,64 tỷ đồng tu bổ các nhà phục dựng tại cả 3 cụm di tích, dự kiến hoàn thành trước ngày 30/4/2027.",
+      "Du khách có thể tham quan các hạng mục được phục dựng như hội trường, nhà làm việc của các đồng chí lãnh đạo, hầm trú ẩn, giao thông hào, bếp Hoàng Cầm; cùng khu trưng bày hiện vật và đường mòn xuyên rừng.",
+    ],
+    highlights: ["Hơn 47.000 lượt khách 9 tháng đầu năm 2026", "Di tích quốc gia đặc biệt (2012)", "Hội trường, nhà làm việc được phục dựng", "Nhà trưng bày số, phim tư liệu 3D mapping", "Hầm chữ A, giao thông hào, bếp Hoàng Cầm", "Khu trưng bày hiện vật kháng chiến", "Đường mòn xuyên rừng, suối Tiên Cô"],
+    mapQuery: "Căn cứ Trung ương Cục miền Nam, Tây Ninh", verified: true,
+  },
+];
+export const ITINERARIES: { name: string; duration: string; desc: string; stops: string[] }[] = [
+  {
+    name: "Về nguồn – Căn cứ Trung ương Cục miền Nam", duration: "Khoảng nửa ngày",
+    desc: "Tham quan khu di tích, nghe thuyết minh lịch sử kháng chiến, trải nghiệm đường mòn xuyên rừng Rùm Đuôn – Chàng Riệc.",
+    stops: ["can-cu-trung-uong-cuc-mien-nam"],
+  },
+];
+
+/* ---------- Quy hoạch ---------- */
+export const PLANNING_PROJECTS: { name: string; type: string; scale: string; status: string; desc: string }[] = [
+  {
+    name: "Quy hoạch bảo quản, tu bổ, phục hồi Khu di tích Căn cứ Trung ương Cục miền Nam", type: "Quy hoạch di tích",
+    scale: "Khoảng 241,25 ha", status: "Đã duyệt nhiệm vụ (QĐ 88/QĐ-TTg, 15/01/2026)",
+    desc: "Phạm vi gồm Căn cứ Trung ương Cục miền Nam (151,25 ha), Căn cứ Chính phủ Cách mạng lâm thời (60 ha) và Căn cứ Mặt trận Dân tộc Giải phóng miền Nam (30 ha); khu vực nghiên cứu khoảng 291,25 ha.",
+  },
+  {
+    name: "Tu bổ, nâng cấp các nhà phục dựng tại 3 cụm di tích", type: "Dự án bảo tồn",
+    scale: "Khoảng 20,64 tỷ đồng", status: "Đang triển khai — hoàn thành trước 30/4/2027",
+    desc: "Sử dụng ngân sách tỉnh; sửa chữa 9 nhà tại Căn cứ Mặt trận, 20/21 nhà tại Căn cứ Trung ương Cục và 10 nhà cùng bia tưởng niệm tại Căn cứ Chính phủ Cách mạng lâm thời.",
+  },
+];
+export const PLANNING_LINKS = [
+  { name: "Cổng thông tin quy hoạch xây dựng và quy hoạch đô thị Việt Nam", url: "https://quyhoach.xaydung.gov.vn/" },
+];
+
+/* ---------- Dịch vụ công ---------- */
+export const DVC_LINKS = [
+  { icon: "upload" as IconName, title: "Nộp hồ sơ trực tuyến", desc: "Cổng Dịch vụ công quốc gia", url: "https://dichvucong.gov.vn/" },
+  { icon: "search" as IconName, title: "Tra cứu thủ tục hành chính", desc: "Danh mục thủ tục, thành phần hồ sơ", url: "https://dichvucong.gov.vn/tra-cuu-thu-tuc/danh-sach" },
+  { icon: "file" as IconName, title: "Tra cứu kết quả hồ sơ", desc: "Theo dõi tiến độ giải quyết", url: "https://dichvucong.gov.vn/tra-cuu-ho-so" },
+];
+export const PROCEDURES: { name: string; field: string; online: boolean; note: string }[] = [
+  { name: "Đăng ký khai sinh", field: "Hộ tịch", online: true, note: "Có thể thực hiện liên thông khai sinh – thường trú – cấp thẻ BHYT trẻ em dưới 6 tuổi." },
+  { name: "Đăng ký khai tử", field: "Hộ tịch", online: true, note: "Có thể liên thông với xóa đăng ký thường trú, hưởng chế độ tử tuất, mai táng phí." },
+  { name: "Đăng ký kết hôn", field: "Hộ tịch", online: true, note: "Hai bên nam, nữ có mặt khi nhận Giấy chứng nhận kết hôn." },
+  { name: "Cấp bản sao trích lục hộ tịch", field: "Hộ tịch", online: true, note: "" },
+  { name: "Xác nhận tình trạng hôn nhân", field: "Hộ tịch", online: true, note: "" },
+  { name: "Chứng thực bản sao từ bản chính", field: "Chứng thực", online: true, note: "Có thể yêu cầu cấp bản sao điện tử từ bản chính." },
+  { name: "Chứng thực chữ ký", field: "Chứng thực", online: false, note: "Người yêu cầu ký trước mặt người thực hiện chứng thực." },
+  { name: "Chứng thực hợp đồng, giao dịch", field: "Chứng thực", online: false, note: "" },
+  { name: "Đăng ký thường trú / tạm trú", field: "Cư trú", online: true, note: "Thực hiện qua VNeID hoặc Cổng dịch vụ công." },
+  { name: "Đăng ký biến động đất đai", field: "Đất đai", online: true, note: "" },
+  { name: "Trợ cấp xã hội hằng tháng", field: "Bảo trợ xã hội", online: true, note: "Xem thêm mục An sinh xã hội." },
+  { name: "Cấp giấy phép xây dựng nhà ở riêng lẻ", field: "Xây dựng", online: true, note: "" },
+];
+export const DVC_STEPS = [
+  { title: "Chuẩn bị tài khoản", desc: "Đăng ký tài khoản định danh điện tử VNeID mức độ 2 (thực hiện tại Công an xã)." },
+  { title: "Đăng nhập", desc: "Đăng nhập Cổng Dịch vụ công quốc gia bằng tài khoản VNeID." },
+  { title: "Chọn thủ tục", desc: "Tìm thủ tục cần thực hiện, chọn cơ quan giải quyết là UBND xã Tân Lập." },
+  { title: "Nộp hồ sơ", desc: "Điền tờ khai, đính kèm giấy tờ, thanh toán phí/lệ phí trực tuyến (nếu có)." },
+  { title: "Theo dõi & nhận kết quả", desc: "Tra cứu tiến độ bằng mã hồ sơ; nhận kết quả trực tuyến hoặc tại Trung tâm Phục vụ hành chính công." },
+];
+
+/* ---------- Tin tức – Thông báo ---------- */
+/* Ảnh minh họa tin tức: ảnh Unsplash (giấy phép Unsplash), chỉ mang tính minh họa — thay bằng ảnh thực tế của xã khi có. */
+
+export type NewsItem = {
+  slug: string; title: string; category: string; date: string; image: string;
+  summary: string; body: string[]; featured?: boolean; sample?: boolean;
+  source?: { name: string; url: string };
+};
+export const NEWS_CATEGORIES = ["Thông báo", "Tin địa phương", "Chuyển đổi số", "An sinh xã hội", "Quy hoạch – xây dựng", "Hướng dẫn"];
+export const NEWS: NewsItem[] = [
+  {
+    slug: "can-cu-trung-uong-cuc-mien-nam-9-thang-2026", title: "Căn cứ Trung ương Cục miền Nam đón hơn 47.000 lượt khách trong 9 tháng năm 2026", category: "Tin địa phương", date: "03/10/2026", image: photos.forest,
+    summary: "Từ đầu năm đến hết tháng 9/2026, khu di tích quốc gia đặc biệt trên địa bàn xã Tân Lập đón 859 đoàn với 47.457 lượt khách, đạt 79,1% kế hoạch năm.",
+    body: [
+      "Theo Ban Quản lý khu di tích, 9 tháng năm 2026, Di tích lịch sử quốc gia đặc biệt Căn cứ Trung ương Cục miền Nam đã tiếp đón 859 đoàn với 47.457 lượt khách tham quan, đạt 79,1% kế hoạch đăng ký năm 2026.",
+      "Khu di tích có diện tích khoảng 160 ha, gồm 3 khu: Căn cứ Trung ương Cục miền Nam, Căn cứ Mặt trận Dân tộc Giải phóng miền Nam và Căn cứ Chính phủ Cách mạng lâm thời Cộng hòa miền Nam Việt Nam, cùng các công trình tại rừng văn hóa – lịch sử Chàng Riệc.",
+      "Căn cứ Trung ương Cục miền Nam được thành lập tháng 3/1951. Năm 2012, Thủ tướng Chính phủ ban hành Quyết định số 548/QĐ-TTg xếp hạng di tích quốc gia đặc biệt.",
+      "Với tiềm năng về du lịch lịch sử – văn hóa, du lịch về nguồn và giáo dục truyền thống, khu di tích đang được tỉnh đẩy nhanh lập quy hoạch, tu bổ và nâng cấp.",
+    ],
+    source: { name: "Báo và Phát thanh, Truyền hình Tây Ninh", url: "https://baotayninh.vn/di-tich-lich-su-quoc-gia-dac-biet-can-cu-trung-uong-cuc-mien-nam-9-thang-dau-nam-2026-tiep-don-hon-47-ngan-du-khach-157794.html" },
+  },
+  {
+    slug: "tu-bo-di-tich-can-cu-trung-uong-cuc-mien-nam", title: "Tu bổ, nâng tầm giá trị Khu di tích Căn cứ Trung ương Cục miền Nam", category: "Quy hoạch – xây dựng", date: "30/09/2026", image: photos.forest, featured: true,
+    summary: "Tỉnh Tây Ninh đầu tư khoảng 20,64 tỷ đồng tu bổ các nhà phục dựng tại 3 cụm di tích quốc gia đặc biệt trên địa bàn xã Tân Lập, dự kiến hoàn thành trước 30/4/2027.",
+    body: [
+      "Khu di tích Căn cứ Trung ương Cục miền Nam nằm dưới tán rừng biên giới thuộc xã Tân Lập — di tích quốc gia đặc biệt, “địa chỉ đỏ” giáo dục truyền thống của cả nước.",
+      "Qua khảo sát, nhiều hạng mục phục dựng đã xuống cấp: 9 nhà tại Căn cứ Mặt trận Dân tộc Giải phóng miền Nam, 20/21 nhà tại Căn cứ Trung ương Cục miền Nam, cùng 10 nhà và 1 bia tưởng niệm tại Căn cứ Chính phủ Cách mạng lâm thời Cộng hòa miền Nam Việt Nam cần được tu sửa.",
+      "Dự án sử dụng ngân sách tỉnh với tổng mức khoảng 20,64 tỷ đồng, mục tiêu hoàn thành trước ngày 30/4/2027. Song song, tỉnh đang triển khai lập quy hoạch bảo quản, tu bổ, phục hồi khu di tích theo nhiệm vụ đã được Thủ tướng Chính phủ phê duyệt tại Quyết định số 88/QĐ-TTg ngày 15/01/2026.",
+      "Việc tu bổ góp phần giữ gìn giá trị lịch sử, đồng thời tạo điều kiện phát triển du lịch về nguồn bền vững cho xã Tân Lập.",
+    ],
+    source: { name: "Báo Tin tức và Dân tộc (TTXVN)", url: "https://baotintuc.vn/tu-bo-nang-tam-gia-tri-di-san-can-cu-trung-uong-cuc-mien-nam-post1390166.html" },
+  },
+  {
+    slug: "dai-hoi-hoi-nan-nhan-chat-doc-da-cam-xa-tan-lap", title: "Đại hội Hội Nạn nhân chất độc da cam/dioxin xã Tân Lập lần thứ I, nhiệm kỳ 2026 – 2031", category: "An sinh xã hội", date: "07/09/2026", image: "https://images.unsplash.com/photo-1534768654272-e97681c3a2c7?auto=format&fit=crop&w=900&q=80",
+    summary: "Đại hội bầu 13 ủy viên Ban Chấp hành; ông Quản Trần Rễ được bầu làm Chủ tịch Hội. Nhiệm kỳ qua, Hội vận động hơn 567 triệu đồng chăm lo nạn nhân.",
+    body: [
+      "Ngày 07/9/2026, Hội Nạn nhân chất độc da cam/dioxin xã Tân Lập tổ chức Đại hội lần thứ I, nhiệm kỳ 2026 – 2031, với phương châm “Đoàn kết, nghĩa tình, trách nhiệm; hướng về cơ sở, hướng về nạn nhân”. Dự đại hội có bà Nguyễn Thị Bạch Huệ – Ủy viên Ban Chấp hành Trung ương Hội, Chủ tịch Hội Nạn nhân chất độc da cam/dioxin tỉnh.",
+      "Hội hiện có 167 hội viên. Giai đoạn 2023 – 2026, Hội vận động được hơn 567 triệu đồng; thăm hỏi 133 lượt nạn nhân với số tiền hơn 96 triệu đồng; phối hợp khám bệnh miễn phí cho 137 lượt người cao tuổi, người khuyết tật, người thu nhập thấp và gia đình nạn nhân (hơn 36 triệu đồng); cùng các đơn vị, nhà hảo tâm trao 371 phần quà trị giá 212 triệu đồng, trong đó 112 phần quà dành cho nạn nhân và gia đình.",
+      "Đại hội bầu 13 ủy viên Ban Chấp hành; ông Quản Trần Rễ được bầu giữ chức Chủ tịch Hội nhiệm kỳ 2026 – 2031. Đại hội cũng bầu 3 đại biểu chính thức và 1 đại biểu dự khuyết dự Đại hội Hội tỉnh lần thứ VI.",
+      "Nhiệm kỳ mới, Hội phấn đấu 100% nạn nhân đủ điều kiện được kết nạp, duy trì thăm hỏi hằng tháng, quan tâm đặc biệt nạn nhân thế hệ thứ hai, thứ ba có hoàn cảnh khó khăn.",
+    ],
+    source: { name: "Báo và Phát thanh, Truyền hình Tây Ninh", url: "https://baotayninh.vn/ong-quan-tran-re-dac-cu-chu-tich-hoi-nan-nhan-chat-doc-da-cam-dioxin-xa-tan-lap-155946.html" },
+  },
+  {
+    slug: "trao-huy-hieu-dang-dot-2-9-2026", title: "Trao Huy hiệu Đảng cho 10 đảng viên xã Tân Lập nhân dịp Quốc khánh 2/9", category: "Tin địa phương", date: "28/08/2026", image: "https://images.unsplash.com/photo-1544562258-d7a25aa0e669?auto=format&fit=crop&w=900&q=80",
+    summary: "Đồng chí Trương Nhật Quang – Ủy viên Ban Thường vụ, Trưởng Ban Nội chính Tỉnh ủy dự và trao Huy hiệu 45 năm, 35 năm tuổi Đảng cho đảng viên xã Tân Lập.",
+    body: [
+      "Sáng 28/8/2026, Đảng ủy xã Tân Lập tổ chức lễ trao Huy hiệu Đảng đợt 2/9 cho đảng viên. Dự buổi lễ có đồng chí Trương Nhật Quang – Ủy viên Ban Thường vụ Tỉnh ủy, Trưởng Ban Nội chính Tỉnh ủy; đồng chí Nguyễn Trọng Tấn – Bí thư Đảng ủy, Chủ tịch HĐND xã; đồng chí Trịnh Hoài Phong – Phó Bí thư Thường trực Đảng ủy, Chủ tịch Ủy ban MTTQ Việt Nam xã; đồng chí Nguyễn Thị Nga – Phó Bí thư Đảng ủy, Chủ tịch UBND xã.",
+      "Đợt này có 10 đảng viên được trao Huy hiệu, gồm 1 đảng viên nhận Huy hiệu 45 năm tuổi Đảng và 9 đảng viên nhận Huy hiệu 35 năm tuổi Đảng, theo quyết định của Ban Thường vụ Tỉnh ủy.",
+      "Phát biểu tại buổi lễ, đồng chí Trương Nhật Quang chúc mừng các đảng viên; khẳng định việc trao Huy hiệu nhân dịp kỷ niệm 81 năm Cách mạng Tháng Tám và Quốc khánh 2/9 thể hiện sự ghi nhận, tri ân của Đảng đối với những đóng góp của các đảng viên.",
+      "Thay mặt các đảng viên, đồng chí Đinh Quang Phóng (Huy hiệu 45 năm tuổi Đảng) bày tỏ niềm vinh dự và hứa tiếp tục giữ gìn phẩm chất người đảng viên, tham gia xây dựng Đảng, chính quyền và các phong trào thi đua ở địa phương.",
+    ],
+    source: { name: "Báo và Phát thanh, Truyền hình Tây Ninh", url: "https://baotayninh.vn/uy-vien-ban-thuong-vu-tinh-uy-truong-ban-noi-chinh-tinh-uy-truong-nhat-quang-trao-huy-hieu-dang-cho-dang-vien-tai-xa-tan-lap-155373.html" },
+  },
+  {
+    slug: "khao-sat-chuyen-doi-so-xa-tan-lap-2026", title: "Tân Lập: 99,07% hồ sơ thủ tục hành chính được nộp trực tuyến", category: "Chuyển đổi số", date: "26/08/2026", image: "https://images.unsplash.com/photo-1592890288564-76628a30a657?auto=format&fit=crop&w=900&q=80",
+    summary: "Ủy ban MTTQ Việt Nam tỉnh khảo sát công tác chuyển đổi số, ứng dụng khoa học, công nghệ trong giải quyết thủ tục hành chính, cung cấp dịch vụ công năm 2026 tại xã Tân Lập.",
+    body: [
+      "Ngày 26/8/2026, đoàn công tác Ban Thường trực Ủy ban MTTQ Việt Nam tỉnh do bà Lê Thị Cẩm Tú – Phó Chủ tịch Ủy ban MTTQ Việt Nam tỉnh làm trưởng đoàn đã khảo sát công tác chuyển đổi số, ứng dụng khoa học, công nghệ trong giải quyết thủ tục hành chính, cung cấp dịch vụ công năm 2026 tại xã Tân Lập.",
+      "Theo báo cáo do ông Nguyễn Văn Thạnh – Phó Chủ tịch UBND xã trình bày, xã có 428 thủ tục hành chính thuộc thẩm quyền, 100% được cung cấp dịch vụ công trực tuyến. Trong kỳ, xã tiếp nhận 10.825 hồ sơ; tỷ lệ nộp trực tuyến đạt 99,07%; số hóa hồ sơ và thanh toán trực tuyến đạt 100%; chỉ số hài lòng của người dân đạt 100%.",
+      "Xã đã đơn giản hóa 2 thủ tục trong lĩnh vực bảo trợ xã hội và hộ tịch, tiết kiệm hơn 115 triệu đồng, chi phí tuân thủ giảm bình quân 46,87%.",
+      "Bên cạnh kết quả đạt được, xã còn gặp khó khăn do địa bàn rộng sau sắp xếp, một bộ phận người cao tuổi và đồng bào dân tộc thiểu số còn hạn chế kỹ năng số, phần mềm đôi lúc lỗi kết nối. Đoàn khảo sát ghi nhận mô hình “Bình dân học vụ số” và Tổ công nghệ số cộng đồng hỗ trợ người dân vùng biên; đề nghị xã phối hợp các sở, ngành khắc phục lỗi đồng bộ phần mềm và nâng cấp hạ tầng công nghệ.",
+    ],
+    source: { name: "Báo và Phát thanh, Truyền hình Tây Ninh", url: "https://baotayninh.vn/uy-ban-mttq-viet-nam-tinh-tay-ninh-khao-sat-cong-tac-chuyen-doi-so-ung-dung-khoa-hoc-cong-nghe-trong-giai-quyet-thu-tuc-hanh-chinh-cung-cap-dich-vu-cong-nam-2026-tai-xa-tan-lap-155140.html" },
+  },
+  {
+    slug: "giam-sat-moi-truong-chan-nuoi", title: "HĐND xã giám sát công tác quản lý môi trường trong chăn nuôi", category: "Tin địa phương", date: "25/08/2026", image: "https://images.unsplash.com/photo-1636998980792-63f27ddea4e3?auto=format&fit=crop&w=900&q=80",
+    summary: "Trên địa bàn xã có 21 trang trại, 44 nhà yến và 336 hộ chăn nuôi nhỏ lẻ; chưa có điểm nóng ô nhiễm nhưng việc xử lý chất thải còn chưa đồng bộ.",
+    body: [
+      "Ngày 25/8/2026, Đoàn giám sát HĐND xã Tân Lập tổ chức hội nghị giám sát chuyên đề công tác quản lý môi trường trong chăn nuôi đối với UBND xã. Bà Đặng Tuyết Mai – Trưởng Ban Kinh tế – Ngân sách HĐND xã chủ trì; dự có bà Nguyễn Thị Cúc – Phó Chủ tịch HĐND xã.",
+      "Theo báo cáo, toàn xã có 21 trang trại chăn nuôi (17 trang trại đang hoạt động, 4 trang trại chưa hoạt động), 44 nhà yến và 336 hộ chăn nuôi nhỏ lẻ. Chăn nuôi phát triển cả về số lượng và quy mô, chuyển dần từ nhỏ lẻ sang trang trại. Địa bàn chưa có “điểm nóng” ô nhiễm, song ý thức của một bộ phận người dân còn hạn chế, việc xử lý chất thải chưa đồng bộ, còn phát sinh mùi hôi.",
+      "Đoàn giám sát đề nghị UBND xã tăng cường thống kê, tuyên truyền, hướng dẫn người dân đầu tư hầm biogas, đệm lót sinh học và phòng, chống dịch bệnh trên đàn vật nuôi.",
+      "UBND xã cam kết cập nhật số liệu chăn nuôi thường xuyên, kiểm tra định kỳ các trang trại quy mô vừa và nhỏ, xử lý vi phạm về bảo vệ môi trường và công khai 7 khu vực không được phép chăn nuôi theo Nghị quyết số 54/2026/NQ-HĐND của HĐND tỉnh.",
+    ],
+    source: { name: "Báo và Phát thanh, Truyền hình Tây Ninh", url: "https://baotayninh.vn/giam-sat-cong-tac-quan-ly-moi-truong-trong-chan-nuoi-tren-dia-ban-xa-tan-lap-155039.html" },
+  },
+  {
+    slug: "tuyen-duong-co-to-quoc-ap-tan-tien", title: "Khánh thành “Tuyến đường cờ Tổ quốc” dài 3 km tại ấp Tân Tiến", category: "Tin địa phương", date: "22/08/2026", image: "https://images.unsplash.com/photo-1544562258-d7a25aa0e669?auto=format&fit=crop&w=900&q=80",
+    summary: "Công trình thanh niên với 200 trụ cờ, 200 lá cờ Tổ quốc do Đoàn Thanh niên Văn phòng Chính phủ phối hợp Tỉnh đoàn Tây Ninh thực hiện.",
+    body: [
+      "Ngày 22/8/2026, Đoàn Thanh niên Văn phòng Chính phủ phối hợp với Tỉnh đoàn Tây Ninh khánh thành, bàn giao công trình thanh niên “Tuyến đường cờ Tổ quốc” dài khoảng 3 km tại ấp Tân Tiến, xã Tân Lập. Dự lễ có ông Nguyễn Đức Minh – Phó Bí thư Đảng ủy Văn phòng Chính phủ.",
+      "Sau một tuần triển khai với hơn 100 lượt đoàn viên, thanh niên tham gia, công trình hoàn thành 200 trụ cờ và 200 lá cờ Tổ quốc, với sự đồng hành của Đoàn cơ sở Văn phòng UBND tỉnh và sự hỗ trợ của doanh nghiệp.",
+      "Cùng ngày, đoàn công tác dâng hương tại Căn cứ Chính phủ Cách mạng lâm thời Cộng hòa miền Nam Việt Nam trên địa bàn xã. Chương trình “Ấm áp biên cương – lan tỏa yêu thương” trao tặng 22 xe đạp, 72 phần quà và 10 máy lọc nước cho học sinh Trường Liên cấp Tiểu học và Trung học cơ sở Tân Lập.",
+    ],
+    source: { name: "Bnews (TTXVN)", url: "https://bnews.vn/tay-ninh-khanh-thanh-tuyen-duong-co-to-quoc-3km-tai-xa-tan-lap/433901.html" },
+  },
+  {
+    slug: "cong-an-xa-trien-khai-nhiem-vu-2026", title: "Công an xã Tân Lập triển khai nhiệm vụ công tác năm 2026", category: "Tin địa phương", date: "16/01/2026", image: `${import.meta.env.BASE_URL}img/crop-E.webp`,
+    summary: "Năm 2025, Công an xã hoàn thành 100% chỉ tiêu được giao, vượt 8/46 chỉ tiêu; được công nhận đơn vị đạt danh hiệu “Đơn vị Quyết thắng”.",
+    body: [
+      "Chiều 16/01/2026, Công an xã Tân Lập tổ chức hội nghị tổng kết công tác năm 2025, triển khai nhiệm vụ năm 2026. Dự hội nghị có đồng chí Nguyễn Trọng Tấn – Bí thư Đảng ủy, Chủ tịch HĐND xã; đồng chí Trịnh Hoài Phong – Phó Bí thư Thường trực Đảng ủy, Chủ tịch Ủy ban MTTQ Việt Nam xã; đồng chí Nguyễn Thị Nga – Phó Bí thư Đảng ủy, Chủ tịch UBND xã.",
+      "Năm 2025, Công an xã hoàn thành 100% chỉ tiêu được giao, trong đó vượt 8/46 chỉ tiêu; 100% tin báo, tố giác tội phạm được tiếp nhận, giải quyết kịp thời. Đơn vị đạt danh hiệu “Đơn vị Quyết thắng”; 4 cá nhân được khen thưởng trong phong trào thi đua “Vì an ninh Tổ quốc”.",
+      "Năm 2026, Công an xã tập trung giữ vững an ninh chính trị, trật tự an toàn xã hội; nâng cao hiệu quả phòng, chống tội phạm; đẩy mạnh chuyển đổi số, cải cách hành chính và thực hiện Đề án 06; xây dựng lực lượng Công an xã chính quy, tinh nhuệ, hiện đại.",
+    ],
+    source: { name: "Công an tỉnh Tây Ninh", url: "https://congan.tayninh.gov.vn/vi/chi-tiet-tin-tuc?Id=267426" },
+  },
+  {
+    slug: "dai-hoi-the-duc-the-thao-lan-thu-i-2025", title: "Tổng kết Đại hội Thể dục thể thao xã Tân Lập lần thứ I năm 2025", category: "Tin địa phương", date: "29/12/2025", image: `${import.meta.env.BASE_URL}img/crop-H.webp`,
+    summary: "Đại hội thu hút hơn 150 vận động viên tranh tài ở 8 môn thi đấu, diễn ra từ ngày 08/11 đến 29/12/2025.",
+    body: [
+      "Sáng 29/12/2025, xã Tân Lập tổ chức tổng kết Đại hội Thể dục thể thao lần thứ I năm 2025. Đại hội khai mạc ngày 08/11/2025 tại Trung tâm Cung ứng dịch vụ sự nghiệp công xã.",
+      "Hơn 150 vận động viên đến từ các đơn vị tranh tài ở 8 môn: bóng đá, bóng chuyền, bơi lội, cầu lông, cờ tướng, cờ vua, kéo co và đẩy gậy.",
+      "Ban Tổ chức đánh giá đại hội diễn ra an toàn, trọng tài làm việc công tâm. Lãnh đạo UBND xã đã trao cờ, giải thưởng cho các đơn vị đạt giải nhất, nhì, ba toàn đoàn và khen thưởng các cá nhân có thành tích xuất sắc.",
+    ],
+    source: { name: "Báo và Phát thanh, Truyền hình Tây Ninh", url: "https://baotayninh.vn/xa-tan-lap-tong-ket-dai-hoi-the-duc-the-thao-lan-thu-i-nam-2025-a196387.html" },
+  },
+  {
+    slug: "ky-ket-bao-ve-rung-mua-kho-2025-2026", title: "Ký kết phối hợp bảo vệ rừng, phòng cháy chữa cháy rừng mùa khô 2025 – 2026", category: "Tin địa phương", date: "20/11/2025", image: photos.forest,
+    summary: "UBND xã Tân Lập cùng Vườn Quốc gia Lò Gò – Xa Mát, kiểm lâm, biên phòng và các đơn vị liên quan ký kết phối hợp bảo vệ hơn 30.000 ha rừng và đất lâm nghiệp.",
+    body: [
+      "Ngày 20/11/2025, Ban Quản lý Vườn Quốc gia Lò Gò – Xa Mát tổ chức ký kết quy chế phối hợp công tác bảo vệ rừng, phòng cháy chữa cháy rừng và phòng, chống phá rừng mùa khô 2025 – 2026. Ông Nguyễn Minh Cường – Phó Giám đốc Vườn Quốc gia chủ trì.",
+      "Tham gia ký kết có các Hạt Kiểm lâm, các Đồn Biên phòng, UBND các xã Tân Biên, Tân Lập, Phước Vinh, Thạnh Bình, Ban Quản lý khu di tích và các công ty cao su trên địa bàn.",
+      "Vườn Quốc gia Lò Gò – Xa Mát quản lý hơn 30.000 ha rừng và đất lâm nghiệp trên địa bàn 4 xã, trong đó có xã Tân Lập. Các bên thống nhất chia sẻ thông tin, phối hợp tuần tra và tuyên truyền pháp luật về lâm nghiệp đến người dân.",
+    ],
+    source: { name: "Trang thông tin Đảng bộ tỉnh Tây Ninh", url: "https://dangcongsan.org.vn/tayninh/tin-tuc-hoat-dong/ky-ket-phoi-hop-cong-tac-bao-ve-rung-phong-chay-chua-chay-rung-mua-kho-2025-2026.html" },
+  },
+  {
+    slug: "ban-tuyen-giao-dan-van-ve-nguon-2025", title: "Ban Tuyên giáo và Dân vận Tỉnh ủy về nguồn tại Căn cứ Trung ương Cục miền Nam", category: "Tin địa phương", date: "15/10/2025", image: photos.forest,
+    summary: "Đoàn do bà Nguyễn Thị Xuân Hương – Ủy viên Ban Thường vụ, Trưởng Ban Tuyên giáo và Dân vận Tỉnh ủy dẫn đầu dâng hương, tham quan khu di tích trên địa bàn xã Tân Lập.",
+    body: [
+      "Sáng 15/10/2025, Ban Tuyên giáo và Dân vận Tỉnh ủy Tây Ninh tổ chức chương trình về nguồn tại Khu di tích Căn cứ Trung ương Cục miền Nam, xã Tân Lập. Đoàn do bà Nguyễn Thị Xuân Hương – Ủy viên Ban Thường vụ Tỉnh ủy, Trưởng Ban Tuyên giáo và Dân vận Tỉnh ủy dẫn đầu.",
+      "Đoàn dâng hương tại di tích Ban Dân vận Trung ương Cục miền Nam và Nhà tưởng niệm Chủ tịch Hồ Chí Minh; xem phim tư liệu và tham quan phòng trưng bày lịch sử của khu di tích.",
+      "Chương trình chào mừng Đại hội đại biểu Đảng bộ tỉnh lần thứ I, nhiệm kỳ 2025 – 2030, kỷ niệm 95 năm Ngày truyền thống công tác dân vận của Đảng và 95 năm Ngày thành lập Hội Liên hiệp Phụ nữ Việt Nam.",
+    ],
+    source: { name: "Trang thông tin Đảng bộ tỉnh Tây Ninh", url: "https://dangcongsan.org.vn/tayninh/tin-tuc-hoat-dong/ban-tuyen-giao-va-dan-van-tinh-uy-to-chuc-ve-nguon.html" },
+  },
+  {
+    slug: "thong-tin-lien-he-trung-tam-phuc-vu-hanh-chinh-cong", title: "Thông tin liên hệ Trung tâm Phục vụ hành chính công xã Tân Lập", category: "Thông báo", date: "", image: "https://images.unsplash.com/photo-1496152658208-d41635783718?auto=format&fit=crop&w=900&q=80",
+    summary: "Địa chỉ và số điện thoại đường dây nóng của Trung tâm Phục vụ hành chính công xã để người dân liên hệ giải quyết thủ tục.",
+    body: [
+      "Trung tâm Phục vụ hành chính công xã Tân Lập đặt tại Tổ 14, ấp Tân Hòa, xã Tân Lập, tỉnh Tây Ninh — cùng khu vực trụ sở Đảng ủy – HĐND – UBND xã.",
+      "Số điện thoại đường dây nóng: 0276.3742.139 và 0327.208.848.",
+      "Người dân có thể nộp hồ sơ trực tiếp tại Trung tâm hoặc nộp trực tuyến qua Cổng Dịch vụ công quốc gia bằng tài khoản VNeID mức độ 2. Thời gian làm việc: Thứ Hai – Thứ Sáu, trong giờ hành chính.",
+    ],
+    source: { name: "Tuổi Trẻ Online", url: "https://tuoitre.vn/dia-chi-so-dien-thoai-trung-tam-hanh-chinh-cong-96-xa-phuong-tinh-tay-ninh-moi-20250628115140108.htm" },
+  },
+  {
+    slug: "huong-dan-nop-ho-so-truc-tuyen", title: "Hướng dẫn người dân nộp hồ sơ thủ tục hành chính trực tuyến", category: "Hướng dẫn", date: "", image: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=900&q=80",
+    summary: "Các bước chuẩn bị tài khoản VNeID, đăng nhập Cổng Dịch vụ công quốc gia và theo dõi kết quả hồ sơ.",
+    body: [
+      "Để nộp hồ sơ trực tuyến, người dân cần có tài khoản định danh điện tử VNeID mức độ 2. Nếu chưa có, người dân liên hệ Công an xã để được hướng dẫn đăng ký.",
+      "Sau khi có tài khoản, truy cập Cổng Dịch vụ công quốc gia (dichvucong.gov.vn), chọn Đăng nhập bằng VNeID, tìm thủ tục cần thực hiện và chọn cơ quan giải quyết là UBND xã Tân Lập.",
+      "Người dân điền tờ khai, đính kèm ảnh chụp hoặc bản điện tử các giấy tờ, thanh toán phí/lệ phí (nếu có) và nhận mã hồ sơ để tra cứu tiến độ. Kết quả có thể nhận trực tuyến hoặc tại Trung tâm Phục vụ hành chính công xã.",
+      "Trường hợp gặp khó khăn, người dân có thể đến Trung tâm Phục vụ hành chính công xã hoặc liên hệ Tổ công nghệ số cộng đồng tại ấp để được hỗ trợ.",
+    ],
+  },
+];
+
+/* ---------- Phản ánh kiến nghị ---------- */
+export const FEEDBACK_FIELDS = ["Giao thông", "Môi trường", "An ninh, trật tự", "Đất đai – xây dựng", "Điện, nước, hạ tầng", "Y tế – giáo dục", "Thủ tục hành chính", "Khác"];
+
+/* ---------- Hỗ trợ ---------- */
+export const FAQS: { q: string; a: string }[] = [
+  { q: "Tôi có cần đăng nhập để gửi phản ánh không?", a: "Không. Người dân gửi phản ánh trực tiếp tại mục Phản ánh kiến nghị, chỉ cần họ tên, số điện thoại và mô tả sự việc. Hệ thống cấp mã phản ánh để tra cứu tiến độ." },
+  { q: "Làm sao nộp hồ sơ thủ tục hành chính trực tuyến?", a: "Người dân dùng tài khoản VNeID mức độ 2 để đăng nhập Cổng Dịch vụ công quốc gia, chọn thủ tục và cơ quan giải quyết là UBND xã Tân Lập. Xem hướng dẫn chi tiết tại mục Dịch vụ công." },
+  { q: "Trụ sở UBND xã Tân Lập ở đâu?", a: "Trụ sở Đảng ủy – HĐND – UBND xã đặt tại Tổ 14, ấp Tân Hòa, xã Tân Lập, tỉnh Tây Ninh." },
+  { q: "Xã Tân Lập được thành lập từ những đơn vị nào?", a: "Xã Tân Lập được thành lập trên cơ sở sắp xếp xã Tân Lập (huyện Tân Biên cũ) và xã Thạnh Bắc theo Nghị quyết số 1682/NQ-UBTVQH15, hoạt động từ ngày 01/07/2025." },
+  { q: "Tôi muốn biết mình có thuộc đối tượng được hưởng chính sách an sinh không?", a: "Xem mục An sinh xã hội để tra cứu theo nhóm chính sách, điều kiện và hồ sơ cần chuẩn bị; hoặc liên hệ Trung tâm Phục vụ hành chính công xã để được tư vấn." },
+  { q: "Thông tin cá nhân tôi gửi có được bảo mật không?", a: "Thông tin chỉ được dùng để tiếp nhận, xử lý và phản hồi phản ánh, không công khai họ tên, số điện thoại của người gửi. Xem thêm Chính sách bảo mật." },
+];
+
+/* ---------- Bản đồ số: địa điểm công cộng ----------
+   Toạ độ chỉ lấy từ OpenStreetMap (giấy phép ODbL, được phép tái sử dụng có ghi nguồn).
+   Địa điểm chưa có toạ độ vẫn hiện trong danh sách (kèm liên kết mở Google Maps); khi xã
+   cung cấp toạ độ (đọc GPS tại chỗ) chỉ cần điền lat/lng, điểm ghim sẽ tự hiện trên bản đồ.
+   KHÔNG chép toạ độ từ Google Maps vào đây (điều khoản Google Maps không cho phép). */
+export type PoiCat = "hanh-chinh" | "giao-duc" | "y-te" | "bien-phong" | "di-tich";
+export const POI_CATEGORIES: { id: PoiCat; label: string; color: string; icon: IconName }[] = [
+  { id: "hanh-chinh", label: "Trụ sở hành chính", color: "#1747b5", icon: "building" },
+  { id: "giao-duc", label: "Trường học", color: "#0f9a52", icon: "school" },
+  { id: "y-te", label: "Y tế", color: "#de2f66", icon: "health" },
+  { id: "bien-phong", label: "Biên phòng – cửa khẩu", color: "#6537e0", icon: "shield" },
+  { id: "di-tich", label: "Di tích – rừng quốc gia", color: "#f05a0a", icon: "star" },
+];
+export type Poi = { id: string; cat: PoiCat; name: string; desc: string; lat?: number; lng?: number; source?: string };
+export const POIS: Poi[] = [
+  { id: "ubnd", cat: "hanh-chinh", name: "Trụ sở Đảng ủy – HĐND – UBND xã Tân Lập", desc: "Tổ 14, ấp Tân Hòa" },
+  { id: "pvhcc", cat: "hanh-chinh", name: "Trung tâm Phục vụ hành chính công xã", desc: "Tổ 14, ấp Tân Hòa · Đường dây nóng 0276.3742.139 – 0327.208.848" },
+  { id: "ca-xa", cat: "hanh-chinh", name: "Công an xã Tân Lập", desc: "Tiếp nhận tin báo, đăng ký cư trú, định danh điện tử VNeID" },
+  { id: "th-thcs-tan-lap", cat: "giao-duc", name: "Trường Liên cấp Tiểu học và THCS Tân Lập", desc: "Khu vực xã Tân Lập cũ" },
+  { id: "th-thanh-bac-a", cat: "giao-duc", name: "Trường Tiểu học Thạnh Bắc A", desc: "Khu vực xã Thạnh Bắc cũ" },
+  { id: "th-thanh-bac-b", cat: "giao-duc", name: "Trường Tiểu học Thạnh Bắc B", desc: "Ấp Bàu Bền" },
+  { id: "thcs-thanh-bac", cat: "giao-duc", name: "Trường THCS Thạnh Bắc", desc: "Khu vực xã Thạnh Bắc cũ" },
+  { id: "tram-y-te", cat: "y-te", name: "Trạm Y tế xã Tân Lập", desc: "Khám chữa bệnh ban đầu, tiêm chủng, BHYT" },
+  { id: "don-bp-xa-mat", cat: "bien-phong", name: "Đồn Biên phòng Cửa khẩu Xa Mát", desc: "Khu vực cửa khẩu quốc tế Xa Mát", lat: 11.66283, lng: 105.9824, source: "OSM" },
+  { id: "tram-ks-xa-mat", cat: "bien-phong", name: "Trạm Kiểm soát Biên phòng cửa khẩu Xa Mát", desc: "Khu vực cửa khẩu quốc tế Xa Mát", lat: 11.66715, lng: 105.98214, source: "OSM" },
+  { id: "can-cu-tw", cat: "di-tich", name: "Khu di tích Căn cứ Trung ương Cục miền Nam", desc: "Di tích quốc gia đặc biệt", lat: 11.73299, lng: 106.07677, source: "OSM" },
+  { id: "vqg-lo-go", cat: "di-tich", name: "Văn phòng Vườn Quốc gia Lò Gò – Xa Mát", desc: "Quản lý hơn 30.000 ha rừng và đất lâm nghiệp", lat: 11.59337, lng: 105.99308, source: "OSM" },
+];

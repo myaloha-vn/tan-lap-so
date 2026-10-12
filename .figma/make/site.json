@@ -1,0 +1,10 @@
+{
+  "description": "This modern local portal website serves the residents of Tân Lập, offering essential information, services, and community updates in an engaging, user-friendly format.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
